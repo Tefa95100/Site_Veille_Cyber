@@ -13,7 +13,9 @@ Thumbs.db
 # =========================
 # Never commit secrets
 .env
+.env.*
 *.env
+*.env.*
 .env.*.local
 # Keep the examples
 !.env.example
