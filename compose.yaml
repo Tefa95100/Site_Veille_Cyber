@@ -1,0 +1,33 @@
+services:
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    env_file:
+      - ./services/api/.env.dev
+    ports:
+      # port host: contenair (:-by default if is not in env)
+      - "${API_PORT:-8000}:8000"
+    volumes:
+      - api_data:/data
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthcheck"]
+      interval: 10s
+      timeout: 2s
+      retries: 5
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    env_file:
+      - ./services/frontend/.env.dev
+    ports:
+      - "${FRONT_PORT:-5173}:5173"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api_data: {}
