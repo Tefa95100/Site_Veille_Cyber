@@ -17,7 +17,10 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from . import monitoring
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("health", monitoring.health, name="health"),
+    path("version", monitoring.version, name="version")
 ]
