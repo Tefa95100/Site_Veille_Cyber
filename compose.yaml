@@ -9,6 +9,7 @@ services:
       # port host: contenair (:-by default if is not in env)
       - "${API_PORT:-8000}:8000"
     volumes:
+      - ./services/api:/app:rw
       - api_data:/data
     healthcheck:
       test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthcheck"]
