@@ -3,6 +3,8 @@ services:
     build:
       context: ./services/api
       dockerfile: Dockerfile
+      args:
+        - APP_VERSION=${GIT_SHA:-dev}
     env_file:
       - ./services/api/.env.dev
     ports:
@@ -11,11 +13,6 @@ services:
     volumes:
       - ./services/api:/app:rw
       - api_data:/data
-    healthcheck:
-      test: ["CMD", "curl", "-fsS", "http://localhost:8000/healthcheck"]
-      interval: 10s
-      timeout: 2s
-      retries: 5
     restart: unless-stopped
 
   frontend:
