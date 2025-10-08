@@ -38,7 +38,7 @@ jobs:
         run: docker compose run --rm -e API_BASE_URL=http://api:8000 api pytest -q tests_int
 
       - name: Lint API (Ruff)
-        run: docker compose run --rm api ruff . || echo "Ruff not configured yet (skipped)"
+        run: docker compose run --rm api ruff check . || echo "Ruff not configured yet (skipped)"
 
       - name: Format check API (Black)
         run: docker compose run --rm api black --check . || echo "Black not configured yet (skipped)"
