@@ -72,7 +72,7 @@ test-frontend:
 lint: lint-api lint-frontend
 
 lint-api:
-	-$(COMPOSE) exec $(API_SVC) ruff . && $(COMPOSE) exec $(API_SVC) black --check .
+	-$(COMPOSE) exec $(API_SVC) ruff check . && $(COMPOSE) exec $(API_SVC) black --check .
 
 lint-frontend:
 	-$(COMPOSE) exec frontend npm run lint
