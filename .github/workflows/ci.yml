@@ -37,10 +37,6 @@ jobs:
       - name: Integration tests (health/version)
         run: docker compose run --rm -e API_BASE_URL=http://api:8000 api pytest -q tests_int
 
-      - name: Down
-        if: always()
-        run: docker compose down
-
       - name: Lint API (Ruff)
         run: docker compose run --rm api ruff . || echo "Ruff not configured yet (skipped)"
 
@@ -54,6 +50,10 @@ jobs:
           else
             echo "manage.py not present yet — skipping backend tests for now."
           fi
+
+      - name: Down
+        if: always()
+        run: docker compose down
 
   frontend:
     name: Frontend (build + lint + tests)
