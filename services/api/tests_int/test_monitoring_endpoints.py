@@ -1,6 +1,7 @@
 # services/api/tests_int/test_monitoring_endpoints.py
 import os
 import time
+
 import requests
 
 API_BASE_URL = os.getenv("API_BASE_URL", "http://api:8000")
