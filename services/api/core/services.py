@@ -1,0 +1,57 @@
+from core.dtos import ArticleCreateDTO, ArticleUpdateDTO, ArticleDTO
+from core.exceptions import ValidationError, NotFound
+from core.repositories import ArticleRepository
+
+
+def _to_dto(art) -> ArticleDTO:
+    return ArticleDTO(id=art.id, title=art.title, url=art.url, theme=art.theme)
+
+
+def _validate_create(dto: ArticleCreateDTO) -> None:
+    if not dto.title or len(dto.title.strip()) < 3:
+        raise ValidationError("titre trop court")
+    if not dto.url:
+        raise ValidationError("url obligatoire")
+
+
+def _validate_update(dto: ArticleUpdateDTO) -> None:
+    if dto.title is not None and len(dto.title.strip()) < 3:
+        raise ValidationError("titre trop court")
+
+
+class ArticleService:
+    def __init__(self, repo: ArticleRepository | None = None):
+        self.repo = repo or ArticleRepository()
+
+    def create(self, dto: ArticleCreateDTO) -> ArticleDTO:
+        _validate_create(dto)
+        art = self.repo.create(
+            title=dto.title.strip(), url=dto.url, theme=dto.theme)
+        return _to_dto(art)
+
+    def get(self, pk: int) -> ArticleDTO:
+        try:
+            return _to_dto(self.repo.get(pk))
+        except Exception:
+            raise NotFound(f"Article {pk} introuvable")
+
+    def list(self, **filters) -> list[ArticleDTO]:
+        return [_to_dto(art) for art in self.repo.list(**filters)]
+
+    def update(self, pk: int, dto: ArticleUpdateDTO) -> ArticleDTO:
+        _validate_update(dto)
+        try:
+            art = self.repo.get(pk)
+        except Exception:
+            raise NotFound(f"Article {pk} introuvable")
+        art = self.repo.update(art, title=(dto.title.strip() if dto.title
+                                           is not None else None
+                                           ), url=dto.url, theme=dto.theme)
+        return _to_dto(art)
+
+    def delete(self, pk: int) -> None:
+        try:
+            art = self.repo.get(pk)
+        except Exception:
+            raise NotFound(f"Article {pk} introuvable")
+        self.repo.delete(art)
