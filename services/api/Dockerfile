@@ -6,13 +6,13 @@ FROM python:3.12.6-slim-bookworm AS Builder
 ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
 WORKDIR /app
 # 1) Dependancies: copy only manifest for cache
-COPY requirements.txt ./
+COPY requirements*.txt ./
 # 2) Install deps in a venv, with cache pip BuildKit
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install --upgrade pip && \
-    pip install --no-cache-dir -r requirements.txt
+    pip install --no-cache-dir -r requirements-dev.txt
 # 3) Copy code
 COPY . .
 ARG APP_VERSION=dev
