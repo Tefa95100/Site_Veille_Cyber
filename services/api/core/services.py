@@ -25,8 +25,7 @@ class ArticleService:
 
     def create(self, dto: ArticleCreateDTO) -> ArticleDTO:
         _validate_create(dto)
-        art = self.repo.create(
-            title=dto.title.strip(), url=dto.url, theme=dto.theme)
+        art = self.repo.create(title=dto.title.strip(), url=dto.url, theme=dto.theme)
         return _to_dto(art)
 
     def get(self, pk: int) -> ArticleDTO:
@@ -44,9 +43,12 @@ class ArticleService:
             art = self.repo.get(pk)
         except Exception:
             raise NotFound(f"Article {pk} introuvable")
-        art = self.repo.update(art, title=(dto.title.strip() if dto.title
-                                           is not None else None
-                                           ), url=dto.url, theme=dto.theme)
+        art = self.repo.update(
+            art,
+            title=(dto.title.strip() if dto.title is not None else None),
+            url=dto.url,
+            theme=dto.theme,
+        )
         return _to_dto(art)
 
     def delete(self, pk: int) -> None:

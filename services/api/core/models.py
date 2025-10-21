@@ -13,7 +13,7 @@ class User(models.Model):
     class Meta:
         db_table = "user"  # name of table
         # order by default (more recently in first)
-        ordering = ["-registration_date"] 
+        ordering = ["-registration_date"]
         indexes = [models.Index(fields=["email"])]
 
     def __str__(self):
@@ -25,7 +25,7 @@ class InterestCenter(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="interest_center",
-        )
+    )
     theme = models.CharField(max_length=120)
 
     class Meta:
@@ -43,35 +43,32 @@ class Result(models.Model):
         User,
         on_delete=models.CASCADE,
         related_name="results",
-       )
+    )
     module = models.ForeignKey(
-        "Module",
-        on_delete=models.CASCADE,
-        related_name="results"
+        "Module", on_delete=models.CASCADE, related_name="results"
     )
     score = models.PositiveSmallIntegerField(
         validators=[MinValueValidator(0), MaxValueValidator(100)]
-        )
+    )
 
     class Meta:
         db_table = "result"
         ordering = ["-score"]
         constraints = [
             models.UniqueConstraint(
-                fields=["user", "module"], name="uniq_result_user_module")
-                ]
+                fields=["user", "module"], name="uniq_result_user_module"
+            )
+        ]
         indexes = [models.Index(fields=["user", "module"])]
 
     def __str__(self) -> str:
         # Choisis un identifiant lisible de l'utilisateur et du module
-        user_label = getattr(self.user, "username", None
-                             ) or getattr(
-                                 self.user, "email", str(self.user_id))
-        module_label = getattr(
-            self.module, "titre", None
-                               ) or getattr(
-                                   self.module, "title", str(self.module_id)
-                                   )
+        user_label = getattr(self.user, "username", None) or getattr(
+            self.user, "email", str(self.user_id)
+        )
+        module_label = getattr(self.module, "titre", None) or getattr(
+            self.module, "title", str(self.module_id)
+        )
         return f"Result(user={
             user_label}, module={module_label}, score={self.score})"
 

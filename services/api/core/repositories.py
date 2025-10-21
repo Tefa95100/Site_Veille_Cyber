@@ -7,7 +7,8 @@ class ArticleRepository:
 
     def list(self, **filters):
         return Article.objects.filter(**filters).order_by(
-            "-publish_date", "-created_at")
+            "-publish_date", "-created_at"
+        )
 
     def create(self, **fields) -> Article:
         return Article.objects.create(**fields)
