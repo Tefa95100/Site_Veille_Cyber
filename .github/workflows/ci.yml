@@ -51,6 +51,9 @@ jobs:
             echo "manage.py not present yet — skipping backend tests for now."
           fi
 
+      - name: Run unit tests (services article)
+        run: docker compose run --rm -w /app api pytest -q core/tests/test_services_article.py
+
       - name: Down
         if: always()
         run: docker compose down -v --remove-orphans || true
