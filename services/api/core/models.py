@@ -137,7 +137,7 @@ class PossibleChoice(models.Model):
 
 class Article(models.Model):
     title = models.CharField(max_length=300)
-    url = models.URLField(null=True, blank=True)
+    url = models.URLField(unique=True)
     theme = models.CharField(max_length=120, null=True, blank=True)
     publish_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -148,6 +148,7 @@ class Article(models.Model):
         indexes = [
             models.Index(fields=["theme"]),
             models.Index(fields=["-publish_date"]),
+            models.Index(fields=["-created_at"]),
         ]
 
     def __str__(self) -> str:
