@@ -16,7 +16,7 @@ Including another URLconf
 """
 
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, include
 
 from . import monitoring
 
@@ -24,4 +24,5 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("health", monitoring.health, name="health"),
     path("version", monitoring.version, name="version"),
+    path("api/", include("core.api.urls")),
 ]
