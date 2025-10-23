@@ -1,6 +1,18 @@
 from core.dtos import ArticleCreateDTO, ArticleUpdateDTO, ArticleDTO
 from core.exceptions import ValidationError, NotFound
 from core.repositories import ArticleRepository
+from django.core.validators import URLValidator
+from django.core.exceptions import ValidationError as DjangoValError
+
+
+_url_validator = URLValidator()
+
+
+def _validate_url_format(url: str) -> None:
+    try:
+        _url_validator(url)
+    except DjangoValError:
+        raise ValidationError("url invalide")
 
 
 def _to_dto(art) -> ArticleDTO:
@@ -25,6 +37,9 @@ class ArticleService:
 
     def create(self, dto: ArticleCreateDTO) -> ArticleDTO:
         _validate_create(dto)
+        _validate_url_format(dto.url)
+        if hasattr(self.repo, "exists_url") and self.repo.exists_url(dto.url):
+            raise ValidationError("url déjà utilisée", code="duplicate_url")
         art = self.repo.create(title=dto.title.strip(), url=dto.url, theme=dto.theme)
         return _to_dto(art)
 
@@ -43,6 +58,13 @@ class ArticleService:
             art = self.repo.get(pk)
         except Exception:
             raise NotFound(f"Article {pk} introuvable")
+
+        new_url = dto.url if dto.url is not None else art.url
+        _validate_url_format(new_url)
+
+        if dto.url is not None and hasattr(self.repo, "exists_url_other") and self.repo.exists_url_other(pk, new_url):
+            raise ValidationError("url déjà utilisée", code="duplicate_url")
+
         art = self.repo.update(
             art,
             title=(dto.title.strip() if dto.title is not None else None),

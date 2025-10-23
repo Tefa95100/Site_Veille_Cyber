@@ -26,3 +26,9 @@ def test_get_unknown_id_raises():
     svc = ArticleService()
     with pytest.raises(NotFound):
         svc.get(999999)
+
+
+def test_create_invalid_url_format_raises():
+    svc = ArticleService()
+    with pytest.raises(ValidationError):
+        svc.create(ArticleCreateDTO(title="Ok", url="notaurl", theme="sécurité"))
