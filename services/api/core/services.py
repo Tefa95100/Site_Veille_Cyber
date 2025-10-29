@@ -38,9 +38,16 @@ class ArticleService:
     def create(self, dto: ArticleCreateDTO) -> ArticleDTO:
         _validate_create(dto)
         _validate_url_format(dto.url)
+
         if hasattr(self.repo, "exists_url") and self.repo.exists_url(dto.url):
             raise ValidationError("url déjà utilisée", code="duplicate_url")
-        art = self.repo.create(title=dto.title.strip(), url=dto.url, theme=dto.theme)
+
+        try:
+            art = self.repo.create(
+                title=dto.title.strip(), url=dto.url, theme=dto.theme
+            )
+        except self.repo.UniqueViolation:
+            raise ValidationError("url déjà utilisée", code="duplicate_url")
         return _to_dto(art)
 
     def get(self, pk: int) -> ArticleDTO:
@@ -62,15 +69,22 @@ class ArticleService:
         new_url = dto.url if dto.url is not None else art.url
         _validate_url_format(new_url)
 
-        if dto.url is not None and hasattr(self.repo, "exists_url_other") and self.repo.exists_url_other(pk, new_url):
+        if (
+            dto.url is not None
+            and hasattr(self.repo, "exists_url_other")
+            and self.repo.exists_url_other(pk, new_url)
+        ):
             raise ValidationError("url déjà utilisée", code="duplicate_url")
 
-        art = self.repo.update(
-            art,
-            title=(dto.title.strip() if dto.title is not None else None),
-            url=dto.url,
-            theme=dto.theme,
-        )
+        try:
+            art = self.repo.update(
+                art,
+                title=(dto.title.strip() if dto.title is not None else None),
+                url=dto.url,
+                theme=dto.theme,
+            )
+        except self.repo.UniqueViolation:
+            raise ValidationError("url déjà utilisée", code="duplicate_url")
         return _to_dto(art)
 
     def delete(self, pk: int) -> None:

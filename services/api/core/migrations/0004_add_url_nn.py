@@ -13,9 +13,10 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="article",
             name="url_nn",
-            field=models.URLField(unique=True, null=False, default="http://placeholder.invalid"),
+            field=models.URLField(
+                unique=True, null=False, default="http://placeholder.invalid"
+            ),
         ),
-        # On retire le default du state pour la suite (pas obligatoire, mais plus propre)
         migrations.AlterField(
             model_name="article",
             name="url_nn",
