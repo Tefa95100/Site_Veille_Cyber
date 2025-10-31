@@ -47,10 +47,10 @@ def test_list_articles_filtered_by_multiple_themes():
 
     assert response.status_code == 200, response.data
 
-    themes_returned = {article["theme"] for article in response.data}
+    themes_returned = {article["theme"] for article in response.data["results"]}
 
     assert themes_returned == {"security", "pentest"}
 
-    for article in response.data:
+    for article in response.data["results"]:
         assert article["theme"] in ("security", "pentest")
         assert article["theme"] != "cloud"
