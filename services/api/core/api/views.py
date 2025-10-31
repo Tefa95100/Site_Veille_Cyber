@@ -1,0 +1,96 @@
+from rest_framework import viewsets, status
+from rest_framework.response import Response
+from rest_framework.request import Request
+from rest_framework.pagination import PageNumberPagination
+
+from core.services import ArticleService
+from core.dtos import ArticleCreateDTO, ArticleUpdateDTO
+from core.exceptions import ValidationError, NotFound
+from .serializers import ArticleCreateIn, ArticleUpdateIn, ArticleOut, ArticleQueryIn
+
+
+class ArticleViewSet(viewsets.ViewSet):
+    """
+    GET    /api/articles/?theme=...
+    POST   /api/articles/
+    GET    /api/articles/{id}/
+    PATCH  /api/articles/{id}/
+    DELETE /api/articles/{id}/
+    """
+
+    svc = ArticleService()
+
+    ordering_fields = ["publish_date", "created_at", "theme", "title"]
+    ordering = ["-publish_date", "-created_at"]
+
+    def list(self, request: Request) -> Response:
+        raw_query = {
+            "theme": request.query_params.getlist("theme"),
+        }
+
+        q = ArticleQueryIn(data=raw_query)
+        q.is_valid(raise_exception=True)
+
+        themes = q.validated_data.get("theme", [])
+
+        if len(themes) == 0:
+            themes = None
+
+        items = self.svc.list(theme=themes)
+
+        dict_items = [ArticleOut(i.__dict__).data for i in items]
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(dict_items, request)
+
+        ordering_param = request.query_params.get("ordering")
+        if ordering_param:
+            reverse = ordering_param.startswith("-")
+            field = ordering_param.lstrip("-")
+            try:
+                page.sort(key=lambda x: x.get(field), reverse=reverse)
+            except Exception:
+                pass
+
+        data = [ArticleOut(obj).data for obj in page]
+
+        return paginator.get_paginated_response(data)
+
+    def retrieve(self, request: Request, pk=None) -> Response:
+        try:
+            dto = self.svc.get(int(pk))
+            return Response(ArticleOut(dto.__dict__).data, status=200)
+        except NotFound as e:
+            return Response({"code": e.code, "message": e.message}, status=404)
+
+    def create(self, request: Request) -> Response:
+        ser = ArticleCreateIn(data=request.data)
+        ser.is_valid(raise_exception=True)
+        try:
+            dto = self.svc.create(ArticleCreateDTO(**ser.validated_data))
+            return Response(
+                ArticleOut(dto.__dict__).data, status=status.HTTP_201_CREATED
+            )
+        except ValidationError as e:
+            return Response(
+                {"code": e.code, "message": e.message, "extra": e.extra}, status=400
+            )
+
+    def partial_update(self, request: Request, pk=None) -> Response:
+        ser = ArticleUpdateIn(data=request.data, partial=True)
+        ser.is_valid(raise_exception=True)
+        try:
+            dto = self.svc.update(int(pk), ArticleUpdateDTO(**ser.validated_data))
+            return Response(ArticleOut(dto.__dict__).data, status=200)
+        except NotFound as e:
+            return Response({"code": e.code, "message": e.message}, status=404)
+        except ValidationError as e:
+            return Response(
+                {"code": e.code, "message": e.message, "extra": e.extra}, status=400
+            )
+
+    def destroy(self, request: Request, pk=None) -> Response:
+        try:
+            self.svc.delete(int(pk))
+            return Response(status=204)
+        except NotFound as e:
+            return Response({"code": e.code, "message": e.message}, status=404)

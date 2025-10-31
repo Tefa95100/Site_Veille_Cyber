@@ -31,28 +31,23 @@ jobs:
       - name: Build API image
         run: docker compose build api
 
+      - name: Lint API (Ruff)
+        run: docker compose run --rm -w /app api ruff check .
+
+      - name: Format check API (Black)
+        run: docker compose run --rm -w /app api black --check .
+
+      - name: Run unit tests
+        run: docker compose run --rm -w /app api pytest -q core/tests/tests_unit
+      
+      - name: API tests (DRF)
+        run: docker compose run --rm -w /app api pytest -q core/tests/tests_api
+
       - name: Up API (detached)
         run: docker compose up -d api
 
       - name: Integration tests (health/version)
-        run: docker compose run --rm -e API_BASE_URL=http://api:8000 api pytest -q tests_int
-
-      - name: Lint API (Ruff)
-        run: docker compose run --rm api ruff check . || echo "Ruff not configured yet (skipped)"
-
-      - name: Format check API (Black)
-        run: docker compose run --rm api black --check . || echo "Black not configured yet (skipped)"
-
-      - name: Run API tests (Django)
-        run: |
-          if [ -f services/api/manage.py ]; then
-            docker compose run --rm api python manage.py test
-          else
-            echo "manage.py not present yet — skipping backend tests for now."
-          fi
-
-      - name: Run unit tests (services article)
-        run: docker compose run --rm -w /app api pytest -q core/tests/test_services_article.py
+        run: docker compose run --rm -w /app -e API_BASE_URL=http://api:8000 api pytest -q tests_int
 
       - name: Down
         if: always()

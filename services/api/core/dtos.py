@@ -6,7 +6,7 @@ from typing import Optional
 class ArticleCreateDTO:
     title: str
     url: str
-    theme: str
+    theme: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -21,4 +21,4 @@ class ArticleDTO:
     id: int
     title: str
     url: str
-    theme: str
+    theme: Optional[str] = None

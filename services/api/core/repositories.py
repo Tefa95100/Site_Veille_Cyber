@@ -1,24 +1,52 @@
 from core.models import Article
+from django.db import IntegrityError
 
 
 class ArticleRepository:
+
+    class NotFound(Exception):
+        pass
+
+    class UniqueViolation(Exception):
+        pass
+
     def get(self, pk: int) -> Article:
-        return Article.objects.get(pk=pk)
+        try:
+            return Article.objects.get(pk=pk)
+        except Article.DoesNotExist:
+            raise self.NotFound()
 
     def list(self, **filters):
-        return Article.objects.filter(**filters).order_by(
-            "-publish_date", "-created_at"
-        )
+        qs = Article.objects.all()
+
+        theme = filters.get("theme")
+        if theme:
+            if isinstance(theme, list):
+                qs = qs.filter(theme__in=theme)
+            else:
+                qs = qs.filter(theme=theme)
+
+        return qs.order_by("-publish_date", "-created_at")
+
+    def exists_url(self, url: str) -> bool:
+        return Article.objects.filter(url=url).exists()
 
     def create(self, **fields) -> Article:
-        return Article.objects.create(**fields)
+        try:
+            return Article.objects.create(**fields)
+        except IntegrityError as e:
+            raise self.UniqueViolation() from e
 
     def update(self, obj: Article, **fields) -> Article:
         for k, v in fields.items():
             if v is not None:
                 setattr(obj, k, v)
-        obj.save(update_fields=[k for k, v in fields.items() if v is not None])
-        return obj
+
+        try:
+            obj.save(update_fields=[k for k, v in fields.items() if v is not None])
+            return obj
+        except IntegrityError as e:
+            raise self.UniqueViolation() from e
 
     def delete(self, obj: Article) -> None:
         obj.delete()
