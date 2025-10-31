@@ -18,3 +18,9 @@ class ArticleOut(serializers.Serializer):
     title = serializers.CharField()
     url = serializers.URLField()
     theme = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+
+
+class ArticleQueryIn(serializers.Serializer):
+    theme = serializers.ListField(child=serializers.CharField(), required=False)
+    ordering = serializers.CharField(required=False)
+    page = serializers.IntegerField(required=False, min_value=1)
