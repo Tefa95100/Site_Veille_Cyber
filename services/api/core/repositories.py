@@ -1,5 +1,6 @@
-from core.models import Article
 from django.db import IntegrityError
+
+from core.models import Article
 
 
 class ArticleRepository:

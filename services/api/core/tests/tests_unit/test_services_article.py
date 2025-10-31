@@ -1,7 +1,8 @@
 import pytest
-from core.services import ArticleService
+
 from core.dtos import ArticleCreateDTO
-from core.exceptions import ValidationError, NotFound
+from core.exceptions import NotFound, ValidationError
+from core.services import ArticleService
 
 pytestmark = pytest.mark.django_db
 
