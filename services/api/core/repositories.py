@@ -17,9 +17,16 @@ class ArticleRepository:
             raise self.NotFound()
 
     def list(self, **filters):
-        return Article.objects.filter(**filters).order_by(
-            "-publish_date", "-created_at"
-        )
+        qs = Article.objects.all()
+
+        theme = filters.get("theme")
+        if theme:
+            if isinstance(theme, list):
+                qs = qs.filter(theme__in=theme)
+            else:
+                qs = qs.filter(theme=theme)
+
+        return qs.order_by("-publish_date", "-created_at")
 
     def exists_url(self, url: str) -> bool:
         return Article.objects.filter(url=url).exists()

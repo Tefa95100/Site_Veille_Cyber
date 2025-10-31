@@ -1,11 +1,12 @@
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 from rest_framework.request import Request
+from rest_framework.pagination import PageNumberPagination
 
 from core.services import ArticleService
 from core.dtos import ArticleCreateDTO, ArticleUpdateDTO
 from core.exceptions import ValidationError, NotFound
-from .serializers import ArticleCreateIn, ArticleUpdateIn, ArticleOut
+from .serializers import ArticleCreateIn, ArticleUpdateIn, ArticleOut, ArticleQueryIn
 
 
 class ArticleViewSet(viewsets.ViewSet):
@@ -19,11 +20,40 @@ class ArticleViewSet(viewsets.ViewSet):
 
     svc = ArticleService()
 
+    ordering_fields = ["publish_date", "created_at", "theme", "title"]
+    ordering = ["-publish_date", "-created_at"]
+
     def list(self, request: Request) -> Response:
-        theme = request.query_params.get("theme")
-        items = self.svc.list(theme=theme)
-        data = [ArticleOut(i.__dict__).data for i in items]
-        return Response(data, status=200)
+        raw_query = {
+            "theme": request.query_params.getlist("theme"),
+        }
+
+        q = ArticleQueryIn(data=raw_query)
+        q.is_valid(raise_exception=True)
+
+        themes = q.validated_data.get("theme", [])
+
+        if len(themes) == 0:
+            themes = None
+
+        items = self.svc.list(theme=themes)
+
+        dict_items = [ArticleOut(i.__dict__).data for i in items]
+        paginator = PageNumberPagination()
+        page = paginator.paginate_queryset(dict_items, request)
+
+        ordering_param = request.query_params.get("ordering")
+        if ordering_param:
+            reverse = ordering_param.startswith("-")
+            field = ordering_param.lstrip("-")
+            try:
+                page.sort(key=lambda x: x.get(field), reverse=reverse)
+            except Exception:
+                pass
+
+        data = [ArticleOut(obj).data for obj in page]
+
+        return paginator.get_paginated_response(data)
 
     def retrieve(self, request: Request, pk=None) -> Response:
         try:
