@@ -4,6 +4,7 @@ from rest_framework.test import APIClient
 pytestmark = pytest.mark.django_db
 client = APIClient()
 
+
 def _mk(n):
     """Crée n articles factices."""
     for i in range(n):
@@ -17,6 +18,7 @@ def _mk(n):
             format="json",
         )
         assert r.status_code == 201, r.data
+
 
 def test_pagination_page_1_and_page_2():
     _mk(30)
