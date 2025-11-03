@@ -17,6 +17,24 @@ class ArticleRepository:
         except Article.DoesNotExist:
             raise self.NotFound()
 
+    def list_for_user(self, user=None, theme=None):
+        qs = Article.objects.all()
+
+        if user and user.is_authenticated:
+            interests = list(
+                InterestCenter.objects.filter(user=user).values_list("theme", flat=True)
+            )
+            if interests:
+                qs = qs.filter(theme__in=interests)
+
+        if theme:
+            if isinstance(theme, list):
+                qs = qs.filter(theme__in=theme)
+            else:
+                qs = qs.filter(theme=theme)
+
+        return qs.order_by("-publish_date", "-created_at")
+
     def list(self, **filters):
         qs = Article.objects.all()
 
