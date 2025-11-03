@@ -56,8 +56,8 @@ class ArticleService:
         except Exception:
             raise NotFound(f"Article {pk} introuvable")
 
-    def list(self, **filters) -> list[ArticleDTO]:
-        return [_to_dto(art) for art in self.repo.list(**filters)]
+    def list(self, user=None, theme=None) -> list[ArticleDTO]:
+        return [_to_dto(art) for art in self.repo.list_for_user(user=user, theme=theme)]
 
     def update(self, pk: int, dto: ArticleUpdateDTO) -> ArticleDTO:
         _validate_update(dto)
