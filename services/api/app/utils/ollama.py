@@ -1,4 +1,5 @@
 import os
+
 import requests
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
@@ -26,7 +27,8 @@ def ollama_generate(prompt: str) -> str:
 
 def summarize_article(content: str) -> str:
     prompt = (
-        "Résume le texte suivant en 3 phrases maximum, en français, clair et concis.\n\n"
+        "Résume le texte suivant en 3 phrases maximum, en français, "
+        "clair et concis.\n\n"
         f"TEXTE:\n{content}\n\nRÉSUMÉ:"
     )
     return ollama_generate(prompt)
@@ -34,8 +36,9 @@ def summarize_article(content: str) -> str:
 
 def detect_theme(content: str) -> str:
     prompt = (
-        "Lis le texte suivant et donne UNIQUEMENT le thème principal parmi cette liste : "
-        "sécurité, cloud, pentest, intelligence artificielle, vulnérabilité, autre.\n"
+        "Lis le texte suivant et donne UNIQUEMENT le thème principal "
+        "parmi cette liste : sécurité, cloud, pentest, intelligence artificielle, "
+        "vulnérabilité, autre.\n"
         "Réponds juste par le thème, sans phrase.\n\n"
         f"TEXTE:\n{content}\n\nTHÈME:"
     )

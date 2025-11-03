@@ -1,6 +1,6 @@
 from django.db import IntegrityError
 
-from core.models import Article
+from core.models import Article, InterestCenter
 
 
 class ArticleRepository:
