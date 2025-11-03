@@ -1,4 +1,13 @@
 services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+
   api:
     build:
       context: ./services/api
@@ -10,10 +19,14 @@ services:
     ports:
       # port host: contenair (:-by default if is not in env)
       - "${API_PORT:-8000}:8000"
+    environment:
+      OLLAMA_HOST: http://ollama:11434
     volumes:
       - ./services/api:/app:rw
       - api_data:/data
     restart: unless-stopped
+    depends_on:
+      - ollama
 
   frontend:
     build:
@@ -29,3 +42,4 @@ services:
 
 volumes:
   api_data: {}
+  ollama_data: {}
