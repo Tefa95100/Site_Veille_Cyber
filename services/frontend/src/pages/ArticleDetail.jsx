@@ -45,6 +45,16 @@ export default function ArticleDetail() {
   return (
     <div style={{ padding: "1rem" }}>
       <h1>{article.title}</h1>
+      
+      <div style={{ margin: "1rem 0" }}>
+        {article.summary ? (
+          <p>{article.summary}</p>
+        ) : (
+          <p style={{ fontStyle: "italic", color: "#666" }}>
+            Pas encore de résumé
+          </p>
+        )}
+      </div>
 
       <p>
         <strong>Thème :</strong>{" "}

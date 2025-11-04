@@ -21,6 +21,7 @@ Thumbs.db
 !.env.example
 !**/.env.example
 !**/.env.dev.example
+vertex-key.json
 
 # =========================
 # Logs / reports

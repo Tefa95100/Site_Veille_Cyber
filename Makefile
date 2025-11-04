@@ -92,3 +92,7 @@ dev-api:
 
 dev-frontend:
 	$(COMPOSE) up --build frontend
+
+.PHONY: import-rss
+import-rss:
+	docker compose run --rm api python manage.py import_rss
