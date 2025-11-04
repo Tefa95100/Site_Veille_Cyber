@@ -1,8 +1,9 @@
 from __future__ import annotations
-from google import genai
 
 import os
 import re
+
+from google import genai
 
 ALLOWED_THEMES = {
     "sécurité": "security",
