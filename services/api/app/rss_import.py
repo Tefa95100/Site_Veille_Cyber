@@ -5,7 +5,7 @@ import feedparser
 from django.db import transaction
 from django.utils import timezone
 
-from app.utils.ollama import detect_theme, summarize_article
+from app.utils.ai import detect_theme, summarize_article
 from core.models import Article, FeedSource
 
 MAX_CONTENT_CHARS = 3000

@@ -1,12 +1,12 @@
 services:
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama
-    restart: unless-stopped
-    ports:
-      - "11434:11434"
-    volumes:
-      - ollama_data:/root/.ollama
+#  ollama:
+#    image: ollama/ollama:latest
+#    container_name: ollama
+#    restart: unless-stopped
+#    ports:
+#      - "11434:11434"
+#    volumes:
+#      - ollama_data:/root/.ollama
 
   api:
     build:
@@ -20,14 +20,17 @@ services:
       # port host: contenair (:-by default if is not in env)
       - "${API_PORT:-8000}:8000"
     environment:
-      OLLAMA_HOST: http://ollama:11434
-      OLLAMA_MODEL: phi
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/vertex-key.json
+      - GOOGLE_CLOUD_PROJECT=cyber-news-ai-477214
+      # OLLAMA_HOST: http://ollama:11434
+      # OLLAMA_MODEL: phi
     volumes:
+      - ./services/api/credentials:/app/credentials
       - ./services/api:/app:rw
       - api_data:/data
     restart: unless-stopped
-    depends_on:
-      - ollama
+#    depends_on:
+#      - ollama
 
   frontend:
     build:
@@ -43,4 +46,4 @@ services:
 
 volumes:
   api_data: {}
-  ollama_data: {}
+#  ollama_data: {}
