@@ -1,5 +1,6 @@
 import os
 import re
+
 import requests
 
 OLLAMA_HOST = os.environ.get("OLLAMA_HOST", "http://localhost:11434")

@@ -1,10 +1,12 @@
-import feedparser
-from datetime import datetime, timezone as dt_timezone
-from django.utils import timezone
-from django.db import transaction
+from datetime import datetime
+from datetime import timezone as dt_timezone
 
-from core.models import FeedSource, Article
-from app.utils.ollama import summarize_article, detect_theme
+import feedparser
+from django.db import transaction
+from django.utils import timezone
+
+from app.utils.ollama import detect_theme, summarize_article
+from core.models import Article, FeedSource
 
 MAX_CONTENT_CHARS = 3000
 
@@ -36,10 +38,7 @@ def import_one_feed(feed: FeedSource):
             continue
 
         raw_content = (
-            entry.get("summary")
-            or entry.get("description")
-            or entry.get("title")
-            or ""
+            entry.get("summary") or entry.get("description") or entry.get("title") or ""
         )
 
         raw_content = raw_content[:MAX_CONTENT_CHARS]
