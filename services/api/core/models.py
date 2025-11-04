@@ -139,6 +139,7 @@ class Article(models.Model):
     title = models.CharField(max_length=300)
     url = models.URLField(unique=True)
     theme = models.CharField(max_length=120, null=True, blank=True)
+    summary = models.TextField(blank=True)
     publish_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -188,3 +189,11 @@ class Favoris(models.Model):
     def __str__(self) -> str:
         return f"Favoris(user={
             self.utilisateur_id}, article={self.article_id})"
+
+
+class FeedSource(models.Model):
+    url = models.URLField(unique=True)
+    last_fetched_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.url
