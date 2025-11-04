@@ -7,6 +7,7 @@ class ArticleCreateDTO:
     title: str
     url: str
     theme: Optional[str] = None
+    summary: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -14,6 +15,7 @@ class ArticleUpdateDTO:
     title: Optional[str] = None
     url: Optional[str] = None
     theme: Optional[str] = None
+    summary: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -22,3 +24,4 @@ class ArticleDTO:
     title: str
     url: str
     theme: Optional[str] = None
+    summary: Optional[str] = None
