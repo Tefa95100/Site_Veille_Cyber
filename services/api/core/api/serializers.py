@@ -6,12 +6,15 @@ class ArticleCreateIn(serializers.Serializer):
     url = serializers.URLField()
     theme = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     summary = serializers.CharField(allow_blank=True, required=False)
+    image_url = serializers.URLField(allow_blank=True, required=False)
 
 
 class ArticleUpdateIn(serializers.Serializer):
     title = serializers.CharField(min_length=3, max_length=300, required=False)
     url = serializers.URLField(required=False)
     theme = serializers.CharField(allow_null=True, allow_blank=True, required=False)
+    summary = serializers.CharField(allow_blank=True, required=False)
+    image_url = serializers.URLField(allow_blank=True, required=False)
 
 
 class ArticleOut(serializers.Serializer):
@@ -20,6 +23,7 @@ class ArticleOut(serializers.Serializer):
     url = serializers.URLField()
     theme = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     summary = serializers.CharField(allow_blank=True, required=False)
+    image_url = serializers.URLField(allow_blank=True, required=False)
 
 
 class ArticleQueryIn(serializers.Serializer):

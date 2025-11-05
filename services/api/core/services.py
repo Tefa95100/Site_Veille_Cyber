@@ -17,12 +17,9 @@ def _validate_url_format(url: str) -> None:
 
 def _to_dto(art) -> ArticleDTO:
     return ArticleDTO(
-        id=art.id,
-        title=art.title,
-        url=art.url,
-        theme=art.theme,
-        summary=art.summary
-        )
+        id=art.id, title=art.title, url=art.url, theme=art.theme, summary=art.summary,
+        image_url=art.image_url
+    )
 
 
 def _validate_create(dto: ArticleCreateDTO) -> None:

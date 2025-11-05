@@ -8,6 +8,7 @@ class ArticleCreateDTO:
     url: str
     theme: Optional[str] = None
     summary: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -16,6 +17,7 @@ class ArticleUpdateDTO:
     url: Optional[str] = None
     theme: Optional[str] = None
     summary: Optional[str] = None
+    image_url: Optional[str] = None
 
 
 @dataclass(frozen=True)
@@ -25,3 +27,4 @@ class ArticleDTO:
     url: str
     theme: Optional[str] = None
     summary: Optional[str] = None
+    image_url: Optional[str] = None

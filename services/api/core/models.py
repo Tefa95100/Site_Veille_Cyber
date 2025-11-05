@@ -140,6 +140,7 @@ class Article(models.Model):
     url = models.URLField(unique=True)
     theme = models.CharField(max_length=120, null=True, blank=True)
     summary = models.TextField(blank=True)
+    image_url = models.URLField(null=True, blank=True)
     publish_date = models.DateField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

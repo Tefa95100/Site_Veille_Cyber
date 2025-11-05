@@ -1,5 +1,6 @@
 from datetime import datetime
 from datetime import timezone as dt_timezone
+import re
 
 import feedparser
 from django.db import transaction
@@ -10,10 +11,41 @@ from core.models import Article, FeedSource
 
 MAX_CONTENT_CHARS = 3000
 
+IMG_TAG_RE = re.compile(r'<img[^>]+src="([^"]+)"', re.IGNORECASE)
+
 
 def _to_dt(entry):
     if hasattr(entry, "published_parsed") and entry.published_parsed:
         return datetime(*entry.published_parsed[:6], tzinfo=dt_timezone.utc)
+    return None
+
+
+def _extract_image_url(entry) -> str | None:
+    enclosures = entry.get("enclosures") or getattr(entry, "enclosures", None)
+    if enclosures:
+        first = enclosures[0]
+        url = first.get("url")
+        if url:
+            return url
+
+    media_content = entry.get("media_content") or getattr(entry, "media_content", None)
+    if media_content:
+        url = media_content[0].get("url")
+        if url:
+            return url
+
+    media_thumb = entry.get("media_thumbnail") or getattr(entry, "media_thumbnail", None)
+    if media_thumb:
+        url = media_thumb[0].get("url")
+        if url:
+            return url
+
+    desc = entry.get("description") or entry.get("summary") or ""
+    if desc:
+        m = IMG_TAG_RE.search(desc)
+        if m:
+            return m.group(1)
+
     return None
 
 
@@ -57,11 +89,16 @@ def import_one_feed(feed: FeedSource):
             print(f"  [IA] thème FAILED pour {url}: {e}")
             theme = ""
 
+        image_url = _extract_image_url(entry)
+        if image_url:
+            print(f"  [RSS] image trouvée pour {url}: {image_url}")
+
         Article.objects.create(
             title=entry.get("title", "Sans titre"),
             url=url,
             summary=summary,
             theme=theme,
+            image_url=image_url,
             publish_date=entry_dt,
         )
 
