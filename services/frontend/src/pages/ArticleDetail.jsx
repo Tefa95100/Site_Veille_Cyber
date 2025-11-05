@@ -2,6 +2,9 @@ import { useEffect, useState } from "react";
 import { getArticle } from "../api.js";
 import { useParams, Link } from "react-router-dom";
 
+const FALLBACK_IMG =
+  "/public/images/Bob.jpg";
+
 export default function ArticleDetail() {
   const { id } = useParams();
   const [article, setArticle] = useState(null);
@@ -16,11 +19,7 @@ export default function ArticleDetail() {
         const data = await getArticle(id);
         setArticle(data);
       } catch (err) {
-        if (err.status === 404) {
-          setError("Article introuvable.");
-        } else {
-          setError(err.message || "Erreur chargement article.");
-        }
+        setError(err.message || "Erreur chargement article.");
       } finally {
         setLoading(false);
       }
@@ -28,58 +27,70 @@ export default function ArticleDetail() {
     load();
   }, [id]);
 
-  if (loading) return <p>Chargement…</p>;
+  if (loading) return <p style={{ padding: "1rem" }}>Chargement…</p>;
+
   if (error)
     return (
-      <div style={{ padding: "1rem", color: "red" }}>
-        <p>{error}</p>
-        <p>
-          <Link to="/" style={{ color: "#0066cc" }}>
-            ← Retour aux articles
-          </Link>
-        </p>
+      <div style={{ padding: "1rem" }}>
+        <p style={{ color: "red" }}>{error}</p>
+        <Link to="/articles" style={{ color: "var(--link-color)" }}>
+          ← Retour aux articles
+        </Link>
       </div>
     );
+
   if (!article) return null;
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>{article.title}</h1>
-      
-      <div style={{ margin: "1rem 0" }}>
-        {article.summary ? (
-          <p>{article.summary}</p>
-        ) : (
-          <p style={{ fontStyle: "italic", color: "#666" }}>
-            Pas encore de résumé
-          </p>
-        )}
+    <div className="article-detail">
+      {/* barre retour */}
+      <div className="article-detail__topbar">
+        <Link to="/articles" className="article-detail__back">
+          ← Retour
+        </Link>
       </div>
 
-      <p>
-        <strong>Thème :</strong>{" "}
+      {/* image */}
+      <div className="article-detail__media">
+        <img
+          src={article.image_url || FALLBACK_IMG}
+          alt={article.title}
+          className="article-detail__image"
+        />
+      </div>
+
+      {/* contenu */}
+      <div className="article-detail__body">
+        <h1 className="article-detail__title">{article.title}</h1>
+
         {article.theme ? (
-          article.theme
-        ) : (
-          <i style={{ color: "#666" }}>—</i>
-        )}
-      </p>
+          <span className="article-detail__badge">{article.theme}</span>
+        ) : null}
 
-      <p>
-        <strong>URL :</strong>{" "}
-        {article.url ? (
-          <a href={article.url} target="_blank" rel="noreferrer">
-            {article.url}
-          </a>
-        ) : (
-          <i style={{ color: "#666" }}>Pas de lien source</i>
-        )}
-      </p>
+        <div className="article-detail__summary">
+          {article.summary ? (
+            <p>{article.summary}</p>
+          ) : (
+            <p style={{ fontStyle: "italic", opacity: 0.6 }}>
+              Pas encore de résumé.
+            </p>
+          )}
+        </div>
 
-      <div style={{ marginTop: "1rem" }}>
-        <Link to="/" style={{ color: "#0066cc" }}>
-          ← Retour aux articles
-        </Link>
+        <div className="article-detail__actions">
+          {article.url ? (
+            <a
+              href={article.url}
+              target="_blank"
+              rel="noreferrer"
+              className="article-detail__source-btn"
+            >
+              Voir la source
+            </a>
+          ) : (
+            <span style={{ opacity: 0.6 }}>Aucun lien source</span>
+          )}
+        </div>
       </div>
     </div>
   );

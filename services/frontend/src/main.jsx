@@ -6,6 +6,9 @@ import Home from "./pages/Home.jsx";
 import Health from "./pages/Health.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import ArticleDetail from "./pages/ArticleDetail.jsx";
+import Articles from "./pages/Articles.jsx";
+
+import "./index.css";
 
 const router = createBrowserRouter([
   {
@@ -14,10 +17,11 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "health", element: <Health /> },
+      { path: "articles", element: <Articles /> },
       { path: "articles/:id", element: <ArticleDetail /> },
-      { path: "*", element: <NotFound /> }
-    ]
-  }
+      { path: "*", element: <NotFound /> },
+    ],
+  },
 ]);
 
 createRoot(document.getElementById("root")).render(
