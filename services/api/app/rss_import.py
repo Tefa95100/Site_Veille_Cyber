@@ -1,6 +1,6 @@
+import re
 from datetime import datetime
 from datetime import timezone as dt_timezone
-import re
 
 import feedparser
 from django.db import transaction
@@ -34,7 +34,9 @@ def _extract_image_url(entry) -> str | None:
         if url:
             return url
 
-    media_thumb = entry.get("media_thumbnail") or getattr(entry, "media_thumbnail", None)
+    media_thumb = entry.get("media_thumbnail") or getattr(
+        entry, "media_thumbnail", None
+    )
     if media_thumb:
         url = media_thumb[0].get("url")
         if url:
