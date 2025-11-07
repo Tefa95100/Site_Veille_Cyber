@@ -18,7 +18,7 @@ class AuthTests(APITestCase):
             "username": "alice",
             "email": "alice@example.com",
             "password": "Azerty!1",
-            "themes": ["sécurité", "cloud"],
+            "themes": ["security", "cloud"],
         }
         res = self.client.post(self.register_url, payload, format="json")
         self.assertEqual(res.status_code, 201)
@@ -82,7 +82,7 @@ class AuthTests(APITestCase):
         res = self.client.get(self.me_url, HTTP_AUTHORIZATION=f"Bearer {access}")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["username"], "emma")
-        self.assertIn("sécurité", res.data["themes"])
+        self.assertIn("security", res.data["themes"])
 
     def test_change_password(self):
         _ = User.objects.create_user(
