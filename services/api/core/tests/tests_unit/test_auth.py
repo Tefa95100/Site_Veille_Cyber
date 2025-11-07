@@ -25,7 +25,7 @@ class AuthTests(APITestCase):
         self.assertEqual(res.data["username"], "alice")
         user = User.objects.get(username="alice")
         themes = list(user.interest_centers.values_list("theme", flat=True))
-        self.assertIn("sécurité", themes)
+        self.assertIn("security", themes)
 
     def test_register_weak_password(self):
         payload = {
@@ -72,7 +72,7 @@ class AuthTests(APITestCase):
             email="emma@example.com",
             password="Azerty!1",
         )
-        InterestCenter.objects.create(user=user, theme="sécurité")
+        InterestCenter.objects.create(user=user, theme="security")
 
         login_res = self.client.post(
             self.login_url, {"username": "emma", "password": "Azerty!1"}, format="json"
