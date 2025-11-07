@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from datetime import timedelta
 
 """
 Django settings for app project.
@@ -91,13 +92,16 @@ DATABASES = {
 _PWD = "django.contrib.auth.password_validation"
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": f"{_PWD}.UserAttributeSimilarityValidator"},
-    {"NAME": f"{_PWD}.MinimumLengthValidator"},
+    {"NAME": f"{_PWD}.MinimumLengthValidator",  "OPTIONS": {"min_length": 8}},
     {"NAME": f"{_PWD}.CommonPasswordValidator"},
     {"NAME": f"{_PWD}.NumericPasswordValidator"},
+    {"NAME": "core.validators.NumberValidator"},
+    {"NAME": "core.validators.SpecialCharValidator"},
 ]
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
+    "http://127.0.0.1:5173",
 ]
 
 
@@ -125,7 +129,17 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
-    "PAGE_SIZE": 20,
+    "PAGE_SIZE": 25,
     "DEFAULT_FILTER_BACKENDS": ["rest_framework.filters.OrderingFilter"],
     "EXCEPTION_HANDLER": "core.api.errors.custom_exception_handler",
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
+
+AUTH_USER_MODEL = "core.User"
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),   # tu mets ce que tu veux
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }

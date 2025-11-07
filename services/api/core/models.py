@@ -1,41 +1,28 @@
 from django.conf import settings
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class User(models.Model):
-    name = models.CharField(max_length=120)
-    email = models.EmailField(unique=True)
-    # hash in app
-    password = models.CharField(max_length=128)
-    registration_date = models.DateField()
-
-    class Meta:
-        db_table = "user"  # name of table
-        # order by default (more recently in first)
-        ordering = ["-registration_date"]
-        indexes = [models.Index(fields=["email"])]
-
-    def __str__(self):
-        return f"{self.nom} <{self.email}>"
+class User(AbstractUser):
+    pass
 
 
 class InterestCenter(models.Model):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="interest_center",
+        related_name="interest_centers",
     )
     theme = models.CharField(max_length=120)
 
     class Meta:
         db_table = "interest_center"
-        # An user can have only one theme
         unique_together = (("user", "theme"),)
         indexes = [models.Index(fields=["theme"])]
 
     def __str__(self):
-        return f"{self.theme} (user={self.utilisateur_id})"
+        return f"{self.theme} (user_id={self.user_id})"
 
 
 class Result(models.Model):
@@ -62,15 +49,11 @@ class Result(models.Model):
         indexes = [models.Index(fields=["user", "module"])]
 
     def __str__(self) -> str:
-        # Choisis un identifiant lisible de l'utilisateur et du module
         user_label = getattr(self.user, "username", None) or getattr(
             self.user, "email", str(self.user_id)
         )
-        module_label = getattr(self.module, "titre", None) or getattr(
-            self.module, "title", str(self.module_id)
-        )
-        return f"Result(user={
-            user_label}, module={module_label}, score={self.score})"
+        module_label = getattr(self.module, "title", str(self.module_id))
+        return f"Result(user={user_label}, module={module_label}, score={self.score})"
 
 
 class Module(models.Model):
@@ -80,7 +63,7 @@ class Module(models.Model):
 
     class Meta:
         db_table = "module"
-        ordering = ["title"]  # default sort by title
+        ordering = ["title"]
         indexes = [
             models.Index(fields=["title"]),
         ]
@@ -93,21 +76,20 @@ class Quizz(models.Model):
     module = models.ForeignKey(
         "Module",
         on_delete=models.CASCADE,
-        related_name="quizz",  # a module has several quizzes
+        related_name="quizz",
     )
     question = models.CharField(max_length=500)
     correct_answer = models.CharField(max_length=500)
 
     class Meta:
         db_table = "quizz"
-        ordering = ["id"]  # simple order
+        ordering = ["id"]
         indexes = [
             models.Index(fields=["module"]),
         ]
 
     def __str__(self) -> str:
-        return f"Quizz(module={
-            self.module_id}, question={self.question[:30]}…)"
+        return f"Quizz(module={self.module_id}, question={self.question[:30]}…)"
 
 
 class PossibleChoice(models.Model):
@@ -121,7 +103,6 @@ class PossibleChoice(models.Model):
     class Meta:
         db_table = "possible_choice"
         ordering = ["id"]
-        # Avoid duplicating the same choice for the same quiz
         constraints = [
             models.UniqueConstraint(
                 fields=["quizz", "choice"], name="uniq_quizz_choice"
@@ -132,7 +113,7 @@ class PossibleChoice(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"Choix(quizz={self.quiz_id}, '{self.choix[:30]}…')"
+        return f"Choice(quizz={self.quizz_id}, '{self.choice[:30]}…')"
 
 
 class Article(models.Model):
@@ -158,13 +139,11 @@ class Article(models.Model):
 
 
 class Favoris(models.Model):
-    # a user has multiple favorites
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name="favoris",
     )
-    # an article can be favorited by several users
     article = models.ForeignKey(
         "Article",
         on_delete=models.CASCADE,
@@ -176,8 +155,6 @@ class Favoris(models.Model):
         db_table = "favoris"
         ordering = ["-created_at"]
         constraints = [
-            # prevents a duplicate of the same article
-            # as a favorite for the same user
             models.UniqueConstraint(
                 fields=["user", "article"],
                 name="uniq_favoris_user_article",
@@ -188,8 +165,7 @@ class Favoris(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"Favoris(user={
-            self.utilisateur_id}, article={self.article_id})"
+        return f"Favoris(user={self.user_id}, article={self.article_id})"
 
 
 class FeedSource(models.Model):
