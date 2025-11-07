@@ -1,7 +1,9 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
+import { useAuth } from "../context/AuthContext";
 
 export default function NavBar() {
+  const { user, logout } = useAuth();
   const [dark, setDark] = useState(
     () => localStorage.getItem("theme") === "dark"
   );
@@ -42,7 +44,8 @@ export default function NavBar() {
             Articles
           </NavLink>
 
-          <NavLink
+          {/*
+            <NavLink
             to="/health"
             className={({ isActive }) =>
               isActive ? "nav-link active" : "nav-link"
@@ -50,6 +53,13 @@ export default function NavBar() {
           >
             Health
           </NavLink>
+          */}
+
+          {user?.is_staff && (
+            <a href="http://localhost:8000/admin/" className="nav-link">
+              Admin
+            </a>
+          )}
         </div>
 
         <div className="topbar__right">
@@ -60,7 +70,26 @@ export default function NavBar() {
           >
             {dark ? "☀️" : "🌙"}
           </button>
-          <span className="user-label">non connecté</span>
+
+          {user ? (
+            <>
+              <NavLink to="/profile" className="nav-link">
+                {user.username}
+              </NavLink>
+              <button onClick={logout} className="nav-link">
+                Déconnexion
+              </button>
+            </>
+          ) : (
+            <>
+              <NavLink to="/login" className="nav-link">
+                Connexion
+              </NavLink>
+              <NavLink to="/register" className="nav-link">
+                Inscription
+              </NavLink>
+            </>
+          )}
         </div>
       </nav>
     </header>
