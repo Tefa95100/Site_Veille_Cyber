@@ -7,6 +7,11 @@ import Health from "./pages/Health.jsx";
 import NotFound from "./pages/NotFound.jsx";
 import ArticleDetail from "./pages/ArticleDetail.jsx";
 import Articles from "./pages/Articles.jsx";
+import Login from "./pages/Login.jsx";
+import Register from "./pages/Register.jsx";
+import Profile from "./pages/Profile.jsx";
+import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import { AuthProvider } from "./context/AuthContext.jsx";
 
 import "./index.css";
 
@@ -19,6 +24,16 @@ const router = createBrowserRouter([
       { path: "health", element: <Health /> },
       { path: "articles", element: <Articles /> },
       { path: "articles/:id", element: <ArticleDetail /> },
+      { path: "login", element: <Login /> },
+      { path: "register", element: <Register /> },
+      {
+        path: "profile",
+        element: (
+          <ProtectedRoute>
+            <Profile />
+          </ProtectedRoute>
+        ),
+      },
       { path: "*", element: <NotFound /> },
     ],
   },
@@ -26,6 +41,8 @@ const router = createBrowserRouter([
 
 createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <RouterProvider router={router} />
+    <AuthProvider>
+      <RouterProvider router={router} />
+    </AuthProvider>
   </React.StrictMode>
 );

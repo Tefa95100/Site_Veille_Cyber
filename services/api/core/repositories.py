@@ -1,5 +1,6 @@
 from django.db import IntegrityError
 
+from core.api.serializers import to_english_theme
 from core.models import Article, InterestCenter
 
 
@@ -24,14 +25,16 @@ class ArticleRepository:
             interests = list(
                 InterestCenter.objects.filter(user=user).values_list("theme", flat=True)
             )
-            if interests:
-                qs = qs.filter(theme__in=interests)
+            user_themes = [to_english_theme(t) for t in interests]
+            if user_themes:
+                qs = qs.filter(theme__in=user_themes)
 
         if theme:
-            if isinstance(theme, list):
-                qs = qs.filter(theme__in=theme)
+            if isinstance(theme, (list, tuple)):
+                norm = [to_english_theme(t) for t in theme]
+                qs = qs.filter(theme__in=norm)
             else:
-                qs = qs.filter(theme=theme)
+                qs = qs.filter(theme=to_english_theme(theme))
 
         return qs.order_by("-publish_date", "-created_at")
 
@@ -51,6 +54,9 @@ class ArticleRepository:
         return Article.objects.filter(url=url).exists()
 
     def create(self, **fields) -> Article:
+        theme = fields.get("theme")
+        if theme:
+            fields["theme"] = to_english_theme(theme)
         try:
             return Article.objects.create(**fields)
         except IntegrityError as e:

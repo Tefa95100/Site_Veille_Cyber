@@ -2,6 +2,8 @@ import React, { useEffect, useState } from "react";
 import { listArticles } from "../api.js";
 import ArticleCard from "../components/ArticleCard.jsx";
 
+const PAGE_SIZE = 25;
+
 export default function Articles() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -9,21 +11,27 @@ export default function Articles() {
   const [page, setPage] = useState(1);
   const [hasNext, setHasNext] = useState(false);
   const [hasPrev, setHasPrev] = useState(false);
+  const [totalCount, setTotalCount] = useState(null);
 
   async function loadPage(p = 1) {
     try {
       setLoading(true);
       setError(null);
-      const data = await listArticles({ page: p, page_size: 25 });
+
+      const data = await listArticles({ page: p, page_size: PAGE_SIZE });
+      console.log(data);
+
       const list = Array.isArray(data) ? data : data.results || [];
       setArticles(list);
 
       if (!Array.isArray(data)) {
         setHasNext(!!data.next);
         setHasPrev(!!data.previous);
+        setTotalCount(data.count);
       } else {
-        setHasNext(list.length === 25);
+        setHasNext(list.length === PAGE_SIZE);
         setHasPrev(p > 1);
+        setTotalCount(null);
       }
 
       setPage(p);
@@ -37,6 +45,8 @@ export default function Articles() {
   useEffect(() => {
     loadPage(1);
   }, []);
+
+  const totalPages = totalCount ? Math.ceil(totalCount / PAGE_SIZE) : 1;
 
   return (
     <div style={{ padding: "1rem" }}>
@@ -52,15 +62,54 @@ export default function Articles() {
               <ArticleCard key={a.id} article={a} />
             ))}
           </div>
-          <div className="pagination" style={{ marginTop: "1rem", display: "flex", gap: "1rem", alignItems: "center" }}>
-            <button onClick={() => loadPage(page - 1)} disabled={!hasPrev}>
-              ← Précédent
-            </button>
-            <span>Page {page}</span>
-            <button onClick={() => loadPage(page + 1)} disabled={!hasNext}>
-              Suivant →
-            </button>
-          </div>
+
+          {totalPages > 1 && (
+            <div className="pagination-bar"
+              style={{
+                marginTop: "1.5rem",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <div className="join">
+                <button
+                  className="join-item btn"
+                  onClick={() => loadPage(page - 1)}
+                  disabled={!hasPrev}
+                >
+                  «
+                </button>
+
+                <select
+                    className="join-item btn"
+                    value={page}
+                    onChange={(e) => loadPage(Number(e.target.value))}
+                    style={{
+                      appearance: "none",
+                      WebkitAppearance: "none",
+                      MozAppearance: "none",
+                      paddingRight: "2rem",
+                      backgroundPosition: "right 0.5rem center",
+                      backgroundRepeat: "no-repeat",
+                    }}
+                >
+                  {Array.from({ length: totalPages }).map((_, i) => (
+                    <option key={i + 1} value={i + 1}>
+                      Page {i + 1}
+                    </option>
+                  ))}
+                </select>
+
+                <button
+                  className="join-item btn"
+                  onClick={() => loadPage(page + 1)}
+                  disabled={!hasNext}
+                >
+                  »
+                </button>
+              </div>
+            </div>
+          )}
         </>
       )}
     </div>

@@ -1,18 +1,20 @@
 import { useEffect, useState } from "react";
 import { listArticles } from "../api.js";
 import ArticleCard from "../components/ArticleCard.jsx";
+import { useAuth } from "../context/AuthContext";
 
 export default function Home() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
+  const { access } = useAuth();
 
   useEffect(() => {
     async function load() {
         try {
             setLoading(true);
             setError(null);
-            const data = await listArticles();
+            const data = await listArticles({ page: 1, token: access });
             const list = Array.isArray(data) ? data : data.results || [];
             setArticles(list.slice(0, 10));
         } catch (err) {
@@ -22,7 +24,7 @@ export default function Home() {
         }
     }
     load();
-  }, []);
+  }, [access]);
 
   if (loading) return <p>Chargement…</p>;
   if (error)   return <p style={{ color: "red" }}>{error}</p>;
