@@ -1,18 +1,17 @@
-from rest_framework import status, viewsets, permissions, serializers
-from rest_framework.views import APIView
-from rest_framework.pagination import PageNumberPagination
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.request import Request
+from rest_framework.response import Response
+from rest_framework.views import APIView
 
-
+from core.api.serializers import to_english_theme
 from core.dtos import ArticleCreateDTO, ArticleUpdateDTO
 from core.exceptions import NotFound, ValidationError
-from core.services import ArticleService
 from core.models import InterestCenter
-from core.api.serializers import to_english_theme
+from core.services import ArticleService
 
 from .serializers import (
     ArticleCreateIn,
@@ -20,8 +19,8 @@ from .serializers import (
     ArticleQueryIn,
     ArticleUpdateIn,
     RegisterSerializer,
-    UserMeSerializer
-    )
+    UserMeSerializer,
+)
 
 
 class ArticleViewSet(viewsets.ViewSet):
@@ -72,7 +71,7 @@ class ArticleViewSet(viewsets.ViewSet):
 
         response = paginator.get_paginated_response(data)
 
-        response.data['count'] = len(dict_items)
+        response.data["count"] = len(dict_items)
 
         return response
 
@@ -148,9 +147,7 @@ class MeView(APIView):
         if themes is not None:
             new_themes = {to_english_theme(t) for t in themes}
             user.interest_centers.exclude(theme__in=new_themes).delete()
-            existing = set(
-                user.interest_centers.values_list("theme", flat=True)
-                )
+            existing = set(user.interest_centers.values_list("theme", flat=True))
             to_create = new_themes - existing
             for t in to_create:
                 InterestCenter.objects.create(user=user, theme=t)

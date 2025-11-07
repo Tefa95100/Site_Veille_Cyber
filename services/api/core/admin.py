@@ -1,8 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth import get_user_model
 
-from .models import InterestCenter
-from .models import FeedSource
+from .models import FeedSource, InterestCenter
 
 User = get_user_model()
 

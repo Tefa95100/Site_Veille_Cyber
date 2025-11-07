@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 from datetime import timedelta
+from pathlib import Path
 
 """
 Django settings for app project.
@@ -92,7 +92,7 @@ DATABASES = {
 _PWD = "django.contrib.auth.password_validation"
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": f"{_PWD}.UserAttributeSimilarityValidator"},
-    {"NAME": f"{_PWD}.MinimumLengthValidator",  "OPTIONS": {"min_length": 8}},
+    {"NAME": f"{_PWD}.MinimumLengthValidator", "OPTIONS": {"min_length": 8}},
     {"NAME": f"{_PWD}.CommonPasswordValidator"},
     {"NAME": f"{_PWD}.NumericPasswordValidator"},
     {"NAME": "core.validators.NumberValidator"},
@@ -140,6 +140,6 @@ REST_FRAMEWORK = {
 AUTH_USER_MODEL = "core.User"
 
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),   # tu mets ce que tu veux
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=30),  # tu mets ce que tu veux
     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
 }

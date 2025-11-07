@@ -1,7 +1,7 @@
 from django.db import IntegrityError
 
-from core.models import Article, InterestCenter
 from core.api.serializers import to_english_theme
+from core.models import Article, InterestCenter
 
 
 class ArticleRepository:

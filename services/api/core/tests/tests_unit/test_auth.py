@@ -1,6 +1,6 @@
-from django.urls import reverse
-from rest_framework.test import APITestCase
 from django.contrib.auth import get_user_model
+from rest_framework.test import APITestCase
+
 from core.models import InterestCenter
 
 User = get_user_model()
@@ -37,20 +37,22 @@ class AuthTests(APITestCase):
         self.assertEqual(res.status_code, 400)
 
     def test_login_ok(self):
-        user = User.objects.create_user(
+        _ = User.objects.create_user(
             username="charlie",
             email="charlie@example.com",
             password="Azerty!1",
         )
         res = self.client.post(
-            self.login_url, {"username": "charlie", "password": "Azerty!1"}, format="json"
+            self.login_url,
+            {"username": "charlie", "password": "Azerty!1"},
+            format="json",
         )
         self.assertEqual(res.status_code, 200)
         self.assertIn("access", res.data)
         self.assertIn("refresh", res.data)
 
     def test_login_bad_password(self):
-        user = User.objects.create_user(
+        _ = User.objects.create_user(
             username="david",
             email="david@example.com",
             password="Azerty!1",
@@ -77,15 +79,13 @@ class AuthTests(APITestCase):
         )
         access = login_res.data["access"]
 
-        res = self.client.get(
-            self.me_url, HTTP_AUTHORIZATION=f"Bearer {access}"
-        )
+        res = self.client.get(self.me_url, HTTP_AUTHORIZATION=f"Bearer {access}")
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["username"], "emma")
         self.assertIn("sécurité", res.data["themes"])
 
     def test_change_password(self):
-        user = User.objects.create_user(
+        _ = User.objects.create_user(
             username="fred",
             email="fred@example.com",
             password="Azerty!1",
