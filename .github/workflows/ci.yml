@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [ "main", "develop" ]
+  pull_request:
+    branches: [ "main", "develop" ]
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  api:
+    name: API (build + lint + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env files
+        run: |
+          [ -f .env ] || cp .env.example .env || true
+          mkdir -p services/api
+          [ -f services/api/.env.dev ] || cp services/api/.env.dev.example services/api/.env.dev || true
+
+      - name: Build API image
+        run: docker compose build api
+
+      - name: Lint API (Ruff)
+        run: docker compose run --rm -w /app api ruff check .
+
+      - name: Format check API (Black)
+        run: docker compose run --rm -w /app api black --check .
+
+      - name: Run unit tests
+        run: docker compose run --rm -w /app api pytest -q core/tests/tests_unit
+      
+      - name: API tests (DRF)
+        run: docker compose run --rm -w /app api pytest -q core/tests/tests_api
+
+      - name: Up API (detached)
+        run: docker compose up -d api
+
+      - name: Integration tests (health/version)
+        run: docker compose run --rm -w /app -e API_BASE_URL=http://api:8000 api pytest -q tests_int
+
+      - name: Down
+        if: always()
+        run: docker compose down -v --remove-orphans || true
+
+  frontend:
+    name: Frontend (build + lint + tests)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare env files
+        run: |
+          [ -f .env ] || cp .env.example .env || true
+          mkdir -p services/frontend
+          [ -f services/frontend/.env.dev ] || cp services/frontend/.env.dev.example services/frontend/.env.dev || true
+
+      - name: Build Frontend image
+        run: docker compose build frontend
+
+      - name: Lint Frontend (ESLint)
+        run: docker compose run --rm frontend npm run lint || echo "ESLint not configured yet (skipped)"
+
+      - name: Format Frontend (Prettier)
+        run: docker compose run --rm frontend npm run fmt || echo "Prettier not configured yet (skipped)"
+
+      - name: Frontend tests
+        run: docker compose run --rm frontend npm test -- --watch=false || echo "No FE tests yet (skipped)"

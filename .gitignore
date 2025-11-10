@@ -1,0 +1,104 @@
+# =========================
+# OS / IDE
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+*.code-workspace
+.idea/
+*.iml
+
+# =========================
+# Environments (.env)
+# =========================
+# Never commit secrets
+.env
+.env.*
+*.env
+*.env.*
+.env.*.local
+# Keep the examples
+!.env.example
+!**/.env.example
+!**/.env.dev.example
+vertex-key.json
+
+# =========================
+# Logs / reports
+# =========================
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+coverage/
+coverage.xml
+junit.xml
+htmlcov/
+.coverage*
+pytestdebug.log
+
+# =========================
+# Python / Django (backend)
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.venv/
+venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+.dist-info/
+build/
+dist/
+
+# Local SQLite databases (if bind/volume)
+*.db
+*.sqlite
+*.sqlite3
+
+# 
+Collectstatic / media output files (adapt if needed)
+# 
+(do not ignore your static/ and templates/ sources)
+staticfiles/
+static_root/
+media/
+services/api/staticfiles/
+services/api/media/
+
+# Local settings Django (if you have)
+*settings_local.py
+
+# =========================
+# Node / React (frontend)
+# =========================
+node_modules/
+dist/
+build/
+.cache/
+.vite/
+*.map
+
+# =========================
+# Docker
+# =========================
+# commit Dockerfile / compose.yaml / .dockerignore
+# but ignore mounted archive/local image volumes
+*.tar
+# 
+Common local volumes/artifacts
+data/
+db/
+tmp/
+# Unversioned local overrides (if used)
+docker-compose.override.local.yml
+
+# =========================
+# Others
+# =========================
+*.swp
+*.tmp

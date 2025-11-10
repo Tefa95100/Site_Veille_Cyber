@@ -1,0 +1,65 @@
+services:
+#  ollama:
+#    image: ollama/ollama:latest
+#    container_name: ollama
+#    restart: unless-stopped
+#    ports:
+#      - "11434:11434"
+#    volumes:
+#      - ollama_data:/root/.ollama
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+      args:
+        - APP_VERSION=${GIT_SHA:-dev}
+    env_file:
+      - ./services/api/.env.dev
+    ports:
+      # port host: contenair (:-by default if is not in env)
+      - "${API_PORT:-8000}:8000"
+    environment:
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/credentials/vertex-key.json
+      - GOOGLE_CLOUD_PROJECT=cyber-news-ai-477214
+      # OLLAMA_HOST: http://ollama:11434
+      # OLLAMA_MODEL: phi
+    volumes:
+      - ./services/api/credentials:/app/credentials
+      - ./services/api:/app:rw
+      - api_data:/data
+    restart: unless-stopped
+#    depends_on:
+#      - ollama
+
+  rss-cron:
+    build: ./services/api
+    container_name: rss-cron
+    depends_on:
+      - api
+    env_file:
+      - ./services/api/.env.dev
+    command: >
+      sh -c "
+      while true; do
+        python manage.py import_rss;
+        echo '[cron] RSS import done';
+        sleep 28800;
+      done
+      "
+
+  frontend:
+    build:
+      context: ./services/frontend
+      dockerfile: Dockerfile
+    env_file:
+      - ./services/frontend/.env.dev
+    ports:
+      - "${FRONT_PORT:-5173}:5173"
+    depends_on:
+      - api
+    restart: unless-stopped
+
+volumes:
+  api_data: {}
+#  ollama_data: {}
