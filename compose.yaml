@@ -32,6 +32,22 @@ services:
 #    depends_on:
 #      - ollama
 
+  rss-cron:
+    build: ./services/api
+    container_name: rss-cron
+    depends_on:
+      - api
+    env_file:
+      - ./services/api/.env.dev
+    command: >
+      sh -c "
+      while true; do
+        python manage.py import_rss;
+        echo '[cron] RSS import done';
+        sleep 28800;
+      done
+      "
+
   frontend:
     build:
       context: ./services/frontend
