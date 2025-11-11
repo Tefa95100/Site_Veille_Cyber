@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { listArticles } from "../api.js";
 import ArticleCard from "../components/ArticleCard.jsx";
 import Articles_Filter from "../components/Articles_Filter.jsx";
@@ -60,77 +60,100 @@ export default function Articles() {
   const { user, access } = useAuth();
 
 
-  async function loadPage(p = 1) {
-    try {
-      setLoading(true);
-      setError(null);
+  const loadPage = useCallback(
+    async (p = 1) => {
+      try {
+        setLoading(true);
+        setError(null);
 
-      const data = await listArticles({ page: p, page_size: PAGE_SIZE });
-      const list = Array.isArray(data) ? data : data.results || [];
-      setArticles(list);
+        const data = await listArticles({ page: p, page_size: PAGE_SIZE });
+        const list = Array.isArray(data) ? data : data.results || [];
+        setArticles(list);
 
-      if (!Array.isArray(data)) {
-        setHasNext(!!data.next);
-        setHasPrev(!!data.previous);
-        setTotalCount(data.count);
-      } else {
-        setHasNext(list.length === PAGE_SIZE);
-        setHasPrev(p > 1);
-        setTotalCount(null);
+        if (!Array.isArray(data)) {
+          setHasNext(!!data.next);
+          setHasPrev(!!data.previous);
+          setTotalCount(data.count);
+        } else {
+          setHasNext(list.length === PAGE_SIZE);
+          setHasPrev(p > 1);
+          setTotalCount(null);
+        }
+
+        setPage(p);
+      } catch (err) {
+        setError(err.message || "Impossible de charger les articles");
+      } finally {
+        setLoading(false);
       }
-
-      setPage(p);
-    } catch (err) {
-      setError(err.message || "Impossible de charger les articles");
-    } finally {
-      setLoading(false);
-    }
-  }
+    },
+    []
+  );
 
   useEffect(() => {
     loadPage(1);
-  }, []);
+  }, [loadPage]);
 
-  async function loadAllPublicArticles() {
+  const loadAllPublicArticles = useCallback(async () => {
     setLoadingAll(true);
     let p = 1;
-    let merged = [];
-    while (true) {
+    const merged = [];
+
+    const firstData = await listArticles({ page: p, page_size: PAGE_SIZE });
+    const firstList = Array.isArray(firstData) ? firstData : firstData.results || [];
+    merged.push(...firstList);
+
+    let hasNextPage = !Array.isArray(firstData) && !!firstData.next;
+
+    while (hasNextPage) {
+      p += 1;
       const data = await listArticles({ page: p, page_size: PAGE_SIZE });
       const list = Array.isArray(data) ? data : data.results || [];
-      merged = merged.concat(list);
+      merged.push(...list);
 
-      const hasNextPage = !Array.isArray(data) && !!data.next;
-      if (!hasNextPage) break;
-      p += 1;
+      hasNextPage = !Array.isArray(data) && !!data.next;
     }
+
     setLoadingAll(false);
     setAllArticles(merged);
     return merged;
-  }
+  }, []);
 
-  async function loadAllInterestArticles() {
+  const loadAllInterestArticles = useCallback(async () => {
     if (!user) return [];
     setLoadingAll(true);
     let p = 1;
-    let merged = [];
-    while (true) {
+    const merged = [];
+
+    const firstData = await listArticles({
+      page: p,
+      page_size: PAGE_SIZE,
+      token: access,
+    });
+    const firstList = Array.isArray(firstData)
+      ? firstData
+      : firstData.results || [];
+    merged.push(...firstList);
+
+    let hasNextPage = !Array.isArray(firstData) && !!firstData.next;
+
+    while (hasNextPage) {
+      p += 1;
       const data = await listArticles({
         page: p,
         page_size: PAGE_SIZE,
         token: access,
       });
       const list = Array.isArray(data) ? data : data.results || [];
-      merged = merged.concat(list);
+      merged.push(...list);
 
-      const hasNextPage = !Array.isArray(data) && !!data.next;
-      if (!hasNextPage) break;
-      p += 1;
+      hasNextPage = !Array.isArray(data) && !!data.next;
     }
+
     setLoadingAll(false);
     setAllInterestArticles(merged);
     return merged;
-  }
+  }, [user, access]);
 
   useEffect(() => {
     const isFiltering = selectedTheme !== "" || onlyInterests;
@@ -189,7 +212,16 @@ export default function Articles() {
       setArticles(finalList);
       setTotalCount(finalList.length);
     })();
-  }, [selectedTheme, onlyInterests, access, user]);
+  }, [selectedTheme,
+    onlyInterests,
+    access,
+    user,
+    allArticles,
+    allInterestArticles,
+    loadAllPublicArticles,
+    loadAllInterestArticles,
+    loadPage,
+  ]);
 
   const isFiltering = selectedTheme !== "" || onlyInterests;
   let paginatedArticles = articles;
