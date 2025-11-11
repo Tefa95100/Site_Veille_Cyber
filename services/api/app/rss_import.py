@@ -1,6 +1,6 @@
 import re
-import ssl
 import socket
+import ssl
 from datetime import datetime
 from datetime import timezone as dt_timezone
 from urllib.parse import urlparse
