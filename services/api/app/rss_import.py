@@ -1,6 +1,9 @@
 import re
+import ssl
+import socket
 from datetime import datetime
 from datetime import timezone as dt_timezone
+from urllib.parse import urlparse
 
 import feedparser
 from django.db import transaction
@@ -10,8 +13,8 @@ from app.utils.ai import detect_theme, summarize_article
 from core.models import Article, FeedSource
 
 MAX_CONTENT_CHARS = 3000
-
 IMG_TAG_RE = re.compile(r'<img[^>]+src="([^"]+)"', re.IGNORECASE)
+CHECK_SSL = True
 
 
 def _to_dt(entry):
@@ -51,10 +54,66 @@ def _extract_image_url(entry) -> str | None:
     return None
 
 
+def _is_secure_protocol(feed_url: str) -> bool:
+    parsed = urlparse(feed_url)
+    return parsed.scheme.lower() == "https"
+
+
+def _has_valid_ssl(feed_url: str) -> bool:
+    parsed = urlparse(feed_url)
+    hostname = parsed.hostname
+    if not hostname:
+        return False
+
+    ctx = ssl.create_default_context()
+
+    try:
+        with ctx.wrap_socket(socket.socket(), server_hostname=hostname) as s:
+            s.settimeout(5)
+            s.connect((hostname, 443))
+            cert = s.getpeercert()
+    except Exception:
+        return False
+
+    not_after = cert.get("notAfter")
+    if not not_after:
+        return False
+
+    expires = datetime.strptime(not_after, "%b %d %H:%M:%S %Y %Z")
+    if expires < datetime.utcnow():
+        return False
+
+    return True
+
+
+def _parse_and_validate_rss(feed_url: str):
+    parsed = feedparser.parse(feed_url)
+    if parsed.bozo:
+        return False, None
+
+    if not getattr(parsed, "entries", None):
+        return False, None
+
+    return True, parsed
+
+
 @transaction.atomic
 def import_one_feed(feed: FeedSource):
     print(f"[RSS] Lecture du flux: {feed.url}")
-    parsed = feedparser.parse(feed.url)
+
+    if not _is_secure_protocol(feed.url):
+        print(f"[RSS] ❌ flux rejeté (pas en HTTPS): {feed.url}")
+        return
+
+    if CHECK_SSL and not _has_valid_ssl(feed.url):
+        print(f"[RSS] ❌ flux rejeté (certificat SSL invalide/expiré): {feed.url}")
+        return
+
+    is_valid, parsed = _parse_and_validate_rss(feed.url)
+    if not is_valid or not parsed:
+        print(f"[RSS] ❌ flux rejeté (RSS/XML non valide): {feed.url}")
+        return
+
     last_fetch = feed.last_fetched_at
     now = timezone.now()
 
