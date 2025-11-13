@@ -102,3 +102,4 @@ docker-compose.override.local.yml
 # =========================
 *.swp
 *.tmp
+services/api/best_practices/
