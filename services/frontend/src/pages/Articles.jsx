@@ -70,7 +70,6 @@ export default function Articles() {
         const data = await listArticles({
           page: p,
           page_size: PAGE_SIZE,
-          token: access || undefined
         });
         const list = Array.isArray(data) ? data : data.results || [];
         setArticles(list);
@@ -117,7 +116,6 @@ export default function Articles() {
     const firstData = await listArticles({
       page: p,
       page_size: PAGE_SIZE,
-      token: access || undefined
   });
     const firstList = Array.isArray(firstData) ? firstData : firstData.results || [];
     merged.push(...firstList);
@@ -129,7 +127,6 @@ export default function Articles() {
       const data = await listArticles({
         page: p,
         page_size: PAGE_SIZE,
-        token: access || undefined
       });
       const list = Array.isArray(data) ? data : data.results || [];
       merged.push(...list);
@@ -140,7 +137,7 @@ export default function Articles() {
     setLoadingAll(false);
     setAllArticles(merged);
     return merged;
-  }, [access]);
+  }, []);
 
   const loadAllInterestArticles = useCallback(async () => {
     if (!user) return [];

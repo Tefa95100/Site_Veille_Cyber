@@ -7,13 +7,6 @@ import "../components/ArticleCard.css";
 
 const FALLBACK = "/images/Bob.jpg";
 
-function toAbsolute(url) {
-  if (!url) return null;
-  if (/^https?:\/\//i.test(url)) return url;
-  if (url.startsWith("/")) return `${API_ORIGIN}${url}`;
-  return `${API_ORIGIN}/${url}`;
-}
-
 export default function BestPractices() {
   const { user, access } = useAuth();
   const [items, setItems] = useState([]);
@@ -39,7 +32,9 @@ export default function BestPractices() {
         if (!cancel) setLoading(false);
       }
     })();
-    return () => { cancel = true; };
+    return () => {
+      cancel = true;
+    };
   }, [access]);
 
   if (loading) return <div style={{ padding: "1rem" }}>Chargement…</div>;
@@ -54,7 +49,7 @@ export default function BestPractices() {
       ) : (
         <div className="articles-grid">
           {items.map((bp) => {
-            const imgSrc = toAbsolute(bp.image) || FALLBACK;
+            const imgSrc = bp.image || FALLBACK;
             return (
               <Link
                 key={bp.id}
@@ -86,7 +81,9 @@ export default function BestPractices() {
                 <div className="article-card__content">
                   <h3 className="article-card__title">{bp.title}</h3>
                   <p className="article-card__summary">
-                    {bp.content?.length > 140 ? bp.content.slice(0, 140) + "…" : bp.content}
+                    {bp.content?.length > 140
+                      ? bp.content.slice(0, 140) + "…"
+                      : bp.content}
                   </p>
                 </div>
               </Link>

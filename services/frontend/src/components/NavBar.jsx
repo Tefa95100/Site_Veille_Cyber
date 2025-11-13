@@ -52,13 +52,13 @@ export default function NavBar() {
     <header className="topbar">
       <nav className="topbar__inner">
         <div className="topbar__left">
-          <button
+          {/*<button
             className="nav-burger"
             aria-label="Ouvrir le menu"
             onClick={() => setMenuOpen((v) => !v)}
           >
             {menuOpen ? "✕" : "☰"}
-          </button>
+          </button>*/}
 
           <Link to="/" className="brand" onClick={() => setMenuOpen(false)}>
             CyberFeed

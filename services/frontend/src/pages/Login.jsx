@@ -12,7 +12,7 @@ export default function Login() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const from = location.state?.from?.pathname || "/profile";
+  const from = location.state?.from?.pathname;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -20,7 +20,11 @@ export default function Login() {
     setLoading(true);
     try {
       await login(username, password);
-      navigate(from, { replace: true });
+      const target =
+        from && from !== "/login" && from !== "/register"
+          ? from
+          : "/";
+      navigate(target, { replace: true });
     } catch (err) {
       setError(err.message || "Connexion impossible");
     } finally {

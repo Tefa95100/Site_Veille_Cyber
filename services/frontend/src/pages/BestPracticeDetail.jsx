@@ -42,7 +42,7 @@ export default function BestPracticeDetail() {
 
       <div className="article-detail__media">
         <img
-          src={bp.image_url || FALLBACK}
+          src={bp.image || FALLBACK}
           alt={bp.title}
           className="article-detail__image"
           loading="eager"
