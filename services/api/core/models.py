@@ -1,5 +1,7 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.contenttypes.fields import GenericForeignKey
+from django.contrib.contenttypes.models import ContentType
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
@@ -138,39 +140,46 @@ class Article(models.Model):
         return f"{self.title} ({self.theme})"
 
 
-class Favoris(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="favoris",
-    )
-    article = models.ForeignKey(
-        "Article",
-        on_delete=models.CASCADE,
-        related_name="favoris",
-    )
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        db_table = "favoris"
-        ordering = ["-created_at"]
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "article"],
-                name="uniq_favoris_user_article",
-            ),
-        ]
-        indexes = [
-            models.Index(fields=["user", "article"]),
-        ]
-
-    def __str__(self) -> str:
-        return f"Favoris(user={self.user_id}, article={self.article_id})"
-
-
 class FeedSource(models.Model):
     url = models.URLField(unique=True)
     last_fetched_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return self.url
+
+
+class BestPractice(models.Model):
+    title = models.CharField(max_length=255)
+    content = models.TextField()  # le texte de la bonne pratique
+    image = models.ImageField(upload_to="best_practices/", blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "best_practice"
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return self.title
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="favorites",
+    )
+    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
+    object_id = models.PositiveIntegerField()
+    content_object = GenericForeignKey("content_type", "object_id")
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = "favorite"
+        unique_together = (("user", "content_type", "object_id"),)
+        indexes = [
+            models.Index(fields=["content_type", "object_id"]),
+        ]
+
+    def __str__(self):
+        return f"{self.user} ♥ {self.content_object}"

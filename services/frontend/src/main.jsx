@@ -10,7 +10,10 @@ import Articles from "./pages/Articles.jsx";
 import Login from "./pages/Login.jsx";
 import Register from "./pages/Register.jsx";
 import Profile from "./pages/Profile.jsx";
+import FavoritesPage from "./pages/FavoritesPage.jsx";
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
+import BestPractices from "./pages/BestPractices.jsx";
+import BestPracticeDetail from "./pages/BestPracticeDetail.jsx";
 import { AuthProvider } from "./context/AuthContext.jsx";
 
 import "./index.css";
@@ -24,8 +27,15 @@ const router = createBrowserRouter([
       { path: "health", element: <Health /> },
       { path: "articles", element: <Articles /> },
       { path: "articles/:id", element: <ArticleDetail /> },
+      { path: "best-practices", element: <BestPractices /> },
+      { path: "best-practices/:id", element: <BestPracticeDetail /> },
       { path: "login", element: <Login /> },
       { path: "register", element: <Register /> },
+      { path: "favorites", element: (
+        <ProtectedRoute>
+          <FavoritesPage />
+        </ProtectedRoute>
+      )},
       {
         path: "profile",
         element: (

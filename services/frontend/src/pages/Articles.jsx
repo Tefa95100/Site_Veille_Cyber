@@ -3,6 +3,7 @@ import { listArticles } from "../api.js";
 import ArticleCard from "../components/ArticleCard.jsx";
 import Articles_Filter from "../components/Articles_Filter.jsx";
 import { useAuth } from "../context/AuthContext";
+import { onFavoriteChange } from "../favorite-events";
 
 const PAGE_SIZE = 25;
 
@@ -66,7 +67,10 @@ export default function Articles() {
         setLoading(true);
         setError(null);
 
-        const data = await listArticles({ page: p, page_size: PAGE_SIZE });
+        const data = await listArticles({
+          page: p,
+          page_size: PAGE_SIZE,
+        });
         const list = Array.isArray(data) ? data : data.results || [];
         setArticles(list);
 
@@ -91,6 +95,16 @@ export default function Articles() {
   );
 
   useEffect(() => {
+    const off = onFavoriteChange(({ model, objectId, favorited }) => {
+      if (model !== "article") return;
+      setArticles(prev => prev.map(a => a.id === objectId ? { ...a, is_favorite: favorited } : a));
+      setAllArticles(prev => prev ? prev.map(a => a.id === objectId ? { ...a, is_favorite: favorited } : a) : prev);
+      setAllInterestArticles(prev => prev ? prev.map(a => a.id === objectId ? { ...a, is_favorite: favorited } : a) : prev);
+    });
+    return off;
+  }, []);
+
+  useEffect(() => {
     loadPage(1);
   }, [loadPage]);
 
@@ -99,7 +113,10 @@ export default function Articles() {
     let p = 1;
     const merged = [];
 
-    const firstData = await listArticles({ page: p, page_size: PAGE_SIZE });
+    const firstData = await listArticles({
+      page: p,
+      page_size: PAGE_SIZE,
+  });
     const firstList = Array.isArray(firstData) ? firstData : firstData.results || [];
     merged.push(...firstList);
 
@@ -107,7 +124,10 @@ export default function Articles() {
 
     while (hasNextPage) {
       p += 1;
-      const data = await listArticles({ page: p, page_size: PAGE_SIZE });
+      const data = await listArticles({
+        page: p,
+        page_size: PAGE_SIZE,
+      });
       const list = Array.isArray(data) ? data : data.results || [];
       merged.push(...list);
 

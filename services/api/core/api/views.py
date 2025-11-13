@@ -1,6 +1,8 @@
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import permissions, serializers, status, viewsets
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
@@ -10,7 +12,7 @@ from rest_framework.views import APIView
 from core.api.serializers import to_english_theme
 from core.dtos import ArticleCreateDTO, ArticleUpdateDTO
 from core.exceptions import NotFound, ValidationError
-from core.models import InterestCenter
+from core.models import Article, BestPractice, Favorite, InterestCenter
 from core.services import ArticleService
 
 from .serializers import (
@@ -18,6 +20,8 @@ from .serializers import (
     ArticleOut,
     ArticleQueryIn,
     ArticleUpdateIn,
+    BestPracticeSerializer,
+    FavoriteEnrichedSerializer,
     RegisterSerializer,
     UserMeSerializer,
 )
@@ -53,7 +57,9 @@ class ArticleViewSet(viewsets.ViewSet):
         user = request.user if request.user and request.user.is_authenticated else None
         items = self.svc.list(user=user, theme=themes)
 
-        dict_items = [ArticleOut(i.__dict__).data for i in items]
+        dict_items = [
+            ArticleOut(i.__dict__, context={"request": request}).data for i in items
+        ]
         paginator = PageNumberPagination()
         paginator.page_size = 25
         page = paginator.paginate_queryset(dict_items, request)
@@ -67,9 +73,7 @@ class ArticleViewSet(viewsets.ViewSet):
             except Exception:
                 pass
 
-        data = [ArticleOut(obj).data for obj in page]
-
-        response = paginator.get_paginated_response(data)
+        response = paginator.get_paginated_response(page)
 
         response.data["count"] = len(dict_items)
 
@@ -187,3 +191,58 @@ class ChangePasswordView(APIView):
         user.save()
 
         return Response({"detail": "Mot de passe modifié."})
+
+
+class IsAdminOrReadOnly(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return request.user and request.user.is_staff
+
+
+class BestPracticeViewSet(viewsets.ModelViewSet):
+    queryset = BestPractice.objects.all()
+    serializer_class = BestPracticeSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx["request"] = self.request
+        return ctx
+
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def toggle_favorite(request):
+    model = request.data.get("model")
+    object_id = request.data.get("object_id")
+
+    if model == "article":
+        model_cls = Article
+    elif model == "bestpractice":
+        model_cls = BestPractice
+    else:
+        return Response({"detail": "model inconnu"}, status=400)
+
+    ct = ContentType.objects.get_for_model(model_cls)
+
+    fav, created = Favorite.objects.get_or_create(
+        user=request.user,
+        content_type=ct,
+        object_id=object_id,
+    )
+
+    if not created:
+        fav.delete()
+        return Response({"favorited": False})
+    return Response({"favorited": True})
+
+
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def my_favorites(request):
+    favorites = Favorite.objects.filter(user=request.user).select_related(
+        "content_type"
+    )
+    serializer = FavoriteEnrichedSerializer(favorites, many=True)
+    return Response(serializer.data)
