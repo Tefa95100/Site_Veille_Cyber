@@ -7,10 +7,14 @@ from .views import (
     ChangePasswordView,
     MeView,
     RegisterView,
+    BestPracticeViewSet,
+    toggle_favorite,
+    my_favorites
 )
 
 router = DefaultRouter()
 router.register(r"articles", ArticleViewSet, basename="article")
+router.register(r"best-practices", BestPracticeViewSet, basename="best-practices")
 
 urlpatterns = [
     path("", include(router.urls)),
@@ -19,4 +23,6 @@ urlpatterns = [
     path("auth/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("auth/me/", MeView.as_view()),
     path("auth/change-password/", ChangePasswordView.as_view()),
+    path("favorites/toggle/", toggle_favorite, name="favorite-toggle"),
+    path("favorites/mine/", my_favorites, name="favorite-mine"),
 ]
