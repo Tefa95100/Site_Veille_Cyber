@@ -3,7 +3,7 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from core.models import InterestCenter, BestPractice, Favorite, Article
+from core.models import Article, BestPractice, Favorite, InterestCenter
 
 User = get_user_model()
 

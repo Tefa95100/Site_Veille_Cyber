@@ -91,7 +91,7 @@ export default function Articles() {
         setLoading(false);
       }
     },
-    [access]
+    []
   );
 
   useEffect(() => {

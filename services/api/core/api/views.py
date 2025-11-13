@@ -1,6 +1,6 @@
 from django.contrib.auth.password_validation import validate_password
-from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.contenttypes.models import ContentType
+from django.core.exceptions import ValidationError as DjangoValidationError
 from rest_framework import permissions, serializers, status, viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
@@ -12,7 +12,7 @@ from rest_framework.views import APIView
 from core.api.serializers import to_english_theme
 from core.dtos import ArticleCreateDTO, ArticleUpdateDTO
 from core.exceptions import NotFound, ValidationError
-from core.models import InterestCenter, BestPractice, Favorite, Article
+from core.models import Article, BestPractice, Favorite, InterestCenter
 from core.services import ArticleService
 
 from .serializers import (
@@ -20,10 +20,10 @@ from .serializers import (
     ArticleOut,
     ArticleQueryIn,
     ArticleUpdateIn,
+    BestPracticeSerializer,
+    FavoriteEnrichedSerializer,
     RegisterSerializer,
     UserMeSerializer,
-    FavoriteEnrichedSerializer,
-    BestPracticeSerializer,
 )
 
 
@@ -57,7 +57,9 @@ class ArticleViewSet(viewsets.ViewSet):
         user = request.user if request.user and request.user.is_authenticated else None
         items = self.svc.list(user=user, theme=themes)
 
-        dict_items = [ArticleOut(i.__dict__, context={"request": request}).data for i in items]
+        dict_items = [
+            ArticleOut(i.__dict__, context={"request": request}).data for i in items
+        ]
         paginator = PageNumberPagination()
         paginator.page_size = 25
         page = paginator.paginate_queryset(dict_items, request)
@@ -239,10 +241,8 @@ def toggle_favorite(request):
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def my_favorites(request):
-    favorites = (
-        Favorite.objects
-        .filter(user=request.user)
-        .select_related("content_type")
+    favorites = Favorite.objects.filter(user=request.user).select_related(
+        "content_type"
     )
     serializer = FavoriteEnrichedSerializer(favorites, many=True)
     return Response(serializer.data)

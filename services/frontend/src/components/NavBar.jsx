@@ -30,7 +30,10 @@ export default function NavBar() {
       try {
         const data = await favoritesMine(access);
           if (!abort) setFavCount(Array.isArray(data) ? data.length : 0);
-      } catch (_) {
+      } catch (err) {
+        if (!abort){
+          console.error("Erreur lors du chargement des favoris :", err);
+        }
       }
     }
     fetchFavs();

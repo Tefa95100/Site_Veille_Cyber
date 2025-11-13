@@ -4,12 +4,12 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .views import (
     ArticleViewSet,
+    BestPracticeViewSet,
     ChangePasswordView,
     MeView,
     RegisterView,
-    BestPracticeViewSet,
+    my_favorites,
     toggle_favorite,
-    my_favorites
 )
 
 router = DefaultRouter()

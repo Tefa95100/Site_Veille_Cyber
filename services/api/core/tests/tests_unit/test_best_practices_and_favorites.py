@@ -2,9 +2,9 @@ from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
 from django.urls import reverse
 from rest_framework import status
-from rest_framework.test import APITestCase, APIClient
+from rest_framework.test import APIClient, APITestCase
 
-from core.models import BestPractice, Favorite, Article
+from core.models import BestPractice, Favorite
 
 User = get_user_model()
 
@@ -27,6 +27,7 @@ class BestPracticeAPITests(APITestCase):
         url = reverse("best-practices-list")
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertContains(res, bp.title)
         self.assertEqual(len(res.data["results"]), 1)
         self.assertIn("is_favorite", res.data["results"][0])
         self.assertFalse(res.data["results"][0]["is_favorite"])
@@ -34,15 +35,11 @@ class BestPracticeAPITests(APITestCase):
     def test_create_best_practice_requires_admin(self):
         url = reverse("best-practices-list")
         self.client.force_authenticate(user=self.user)
-        res = self.client.post(
-            url, {"title": "Nope", "content": "no"}, format="json"
-        )
+        res = self.client.post(url, {"title": "Nope", "content": "no"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
         self.client.force_authenticate(user=self.admin)
-        res = self.client.post(
-            url, {"title": "OK", "content": "yes"}, format="json"
-        )
+        res = self.client.post(url, {"title": "OK", "content": "yes"}, format="json")
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
         self.assertEqual(BestPractice.objects.count(), 1)
 
@@ -59,5 +56,6 @@ class BestPracticeAPITests(APITestCase):
         self.client.force_authenticate(user=self.user)
         res = self.client.get(url)
         self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertContains(res, bp.title)
         self.assertEqual(len(res.data["results"]), 1)
         self.assertTrue(res.data["results"][0]["is_favorite"])

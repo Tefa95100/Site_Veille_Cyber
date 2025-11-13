@@ -1,9 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.contenttypes.models import ContentType
-from rest_framework.test import APITestCase, APIRequestFactory
+from rest_framework.test import APIRequestFactory, APITestCase
 
-from core.models import Article, Favorite
 from core.api.serializers import ArticleOut
+from core.models import Article, Favorite
 
 User = get_user_model()
 
