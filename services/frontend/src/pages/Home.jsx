@@ -2,12 +2,23 @@ import { useEffect, useState } from "react";
 import { listArticles } from "../api.js";
 import ArticleCard from "../components/ArticleCard.jsx";
 import { useAuth } from "../context/AuthContext";
+import { onFavoriteChange } from "../favorite-events";
 
 export default function Home() {
   const [articles, setArticles] = useState([]);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
   const { access } = useAuth();
+
+  useEffect(() => {
+    const off = onFavoriteChange(({ model, objectId, favorited }) => {
+      if (model !== "article") return;
+      setArticles(prev =>
+        prev.map(a => a.id === objectId ? { ...a, is_favorite: favorited } : a)
+      );
+    });
+    return off;
+  }, []);
 
   useEffect(() => {
     async function load() {

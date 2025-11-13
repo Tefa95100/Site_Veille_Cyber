@@ -18,6 +18,7 @@
 }
 
 .article-card__image-wrapper {
+  position: relative;
   width: 100%;
   aspect-ratio: 16 / 9;
   overflow: hidden;
@@ -76,4 +77,12 @@
   font-size: 0.65vw;
   text-transform: lowercase;
   cursor: pointer;
+}
+
+.article-card__fav-float {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 2;
+  display: inline-flex;
 }

@@ -1,12 +1,15 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import FavoriteButton from "../components/FavoriteButton";
 import "./ArticleCard.css";
 
 const FALLBACK_IMG =
-  "/public/images/Bob.jpg";
+  "/images/Bob.jpg";
 
 export default function ArticleCard({ article }) {
 	const navigate = useNavigate();
+  const { user } = useAuth();
   const {
 	id,
     title,
@@ -14,6 +17,7 @@ export default function ArticleCard({ article }) {
     summary,
     image_url,
     url,
+    is_favorite,
   } = article;
 
   const handleCardClick = () => {
@@ -30,6 +34,7 @@ export default function ArticleCard({ article }) {
 
   return (
     <div className="article-card" onClick={handleCardClick} role="button">
+
       <div className="article-card__image-wrapper">
         <img
           src={image_url || FALLBACK_IMG}
@@ -37,7 +42,19 @@ export default function ArticleCard({ article }) {
           className="article-card__image"
           loading="lazy"
         />
+
+        {user && (
+          <div className="article-card__fav-float" onClick={(e) => e.stopPropagation()}>
+            <FavoriteButton
+              model="article"
+              objectId={id}
+              initial={is_favorite}
+            />
+          </div>
+        )}
+        
       </div>
+
       <div className="article-card__content">
         <h3 className="article-card__title">{title}</h3>
         {theme ? <span className="article-card__theme">{theme}</span> : null}

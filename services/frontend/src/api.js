@@ -157,3 +157,28 @@ export async function authChangePassword(token, payload) {
     body: payload,
   });
 }
+
+export function favoritesToggle(token, { model, object_id }) {
+  return apiFetch("/favorites/toggle/", {
+    method: "POST",
+    token,
+    body: { model, object_id },
+  });
+}
+
+export function favoritesMine(token) {
+  return apiFetch("/favorites/mine/", { token });
+}
+
+export function listBestPractices({ token, page = 1, page_size } = {}) {
+  const params = new URLSearchParams();
+  if (page) params.set("page", page);
+  if (page_size) params.set("page_size", page_size);
+  return apiFetch(`/best-practices/?${params.toString()}`, { token });
+}
+
+export function getBestPractice(id, token) {
+  return apiFetch(`/best-practices/${id}/`, { token });
+}
+
+export { apiFetch };
