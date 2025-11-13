@@ -1,12 +1,14 @@
 import { Link, NavLink } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
+import { favoritesMine } from "../api";
+import { onFavoriteChange } from "../favorite-events";
 
 export default function NavBar() {
-  const { user, logout } = useAuth();
-  const [dark, setDark] = useState(
-    () => localStorage.getItem("theme") === "dark"
-  );
+  const { user, access, logout } = useAuth();
+  const [dark, setDark] = useState(() => localStorage.getItem("theme") === "dark");
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [favCount, setFavCount] = useState(0);
 
   useEffect(() => {
     if (dark) {
@@ -18,48 +20,94 @@ export default function NavBar() {
     }
   }, [dark]);
 
+  useEffect(() => {
+    let abort = false;
+    async function fetchFavs() {
+      if (!user || !access) {
+        setFavCount(0);
+        return;
+      }
+      try {
+        const data = await favoritesMine(access);
+          if (!abort) setFavCount(Array.isArray(data) ? data.length : 0);
+      } catch (err) {
+        if (!abort){
+          console.error("Erreur lors du chargement des favoris :", err);
+        }
+      }
+    }
+    fetchFavs();
+    return () => {
+      abort = true;
+    };
+  }, [user, access]);
+
+  useEffect(() => {
+    const off = onFavoriteChange(({ favorited }) => {
+      setFavCount((c) => c + (favorited ? 1 : -1));
+    });
+    return off;
+  }, []);
+
+  const linkClass = ({ isActive }) => (isActive ? "nav-link active" : "nav-link");
+
   return (
     <header className="topbar">
       <nav className="topbar__inner">
         <div className="topbar__left">
-          <Link to="/" className="brand">
+          {/*<button
+            className="nav-burger"
+            aria-label="Ouvrir le menu"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            {menuOpen ? "✕" : "☰"}
+          </button>*/}
+
+          <Link to="/" className="brand" onClick={() => setMenuOpen(false)}>
             CyberFeed
           </Link>
 
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Accueil
-          </NavLink>
+          <div className={`topbar__links ${menuOpen ? "open" : ""}`}>
+            <NavLink to="/" className={linkClass} onClick={() => setMenuOpen(false)}>
+              Accueil
+            </NavLink>
 
-          <NavLink
-            to="/articles"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Articles
-          </NavLink>
+            <NavLink to="/articles" className={linkClass} onClick={() => setMenuOpen(false)}>
+              Articles
+            </NavLink>
 
-          {/*
+            {/* 
             <NavLink
-            to="/health"
-            className={({ isActive }) =>
-              isActive ? "nav-link active" : "nav-link"
-            }
-          >
-            Health
-          </NavLink>
-          */}
+              to="/health"
+              className={({ isActive }) =>
+                isActive ? "nav-link active" : "nav-link"
+              }
+              onClick={() => setMenuOpen(false)}
+            >
+              Health
+            </NavLink>
+            */}
 
-          {user?.is_staff && (
-            <a href="http://localhost:8000/admin/" className="nav-link">
-              Admin
-            </a>
-          )}
+            <NavLink to="/best-practices" className={linkClass} onClick={() => setMenuOpen(false)}>
+              Bonnes pratiques
+            </NavLink>
+
+            <NavLink to="/favorites" className={linkClass} onClick={() => setMenuOpen(false)}>
+              Favoris{user ? <span className="badge"> {favCount}</span> : null}
+            </NavLink>
+
+            {user?.is_staff && (
+              <a
+                href="http://localhost:8000/admin/"
+                className="nav-link"
+                target="_blank"
+                rel="noreferrer"
+                onClick={() => setMenuOpen(false)}
+              >
+                Admin
+              </a>
+            )}
+          </div>
         </div>
 
         <div className="topbar__right">
@@ -73,7 +121,7 @@ export default function NavBar() {
 
           {user ? (
             <>
-              <NavLink to="/profile" className="nav-link">
+              <NavLink to="/profile" className="nav-link" onClick={() => setMenuOpen(false)}>
                 {user.username}
               </NavLink>
               <button onClick={logout} className="nav-link">
@@ -82,10 +130,10 @@ export default function NavBar() {
             </>
           ) : (
             <>
-              <NavLink to="/login" className="nav-link">
+              <NavLink to="/login" className="nav-link" onClick={() => setMenuOpen(false)}>
                 Connexion
               </NavLink>
-              <NavLink to="/register" className="nav-link">
+              <NavLink to="/register" className="nav-link" onClick={() => setMenuOpen(false)}>
                 Inscription
               </NavLink>
             </>

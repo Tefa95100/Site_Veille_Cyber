@@ -1,8 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
+from django.contrib.contenttypes.models import ContentType
 from rest_framework import serializers
 
-from core.models import InterestCenter
+from core.models import Article, BestPractice, Favorite, InterestCenter
 
 User = get_user_model()
 
@@ -48,6 +49,27 @@ class ArticleOut(serializers.Serializer):
     theme = serializers.CharField(allow_null=True, allow_blank=True, required=False)
     summary = serializers.CharField(allow_blank=True, required=False)
     image_url = serializers.URLField(allow_blank=True, required=False)
+    is_favorite = serializers.SerializerMethodField()
+
+    def get_is_favorite(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+
+        if isinstance(obj, dict):
+            obj_id = obj.get("id")
+        else:
+            obj_id = getattr(obj, "id", None)
+
+        if not obj_id:
+            return False
+
+        ct = ContentType.objects.get_for_model(Article)
+        return Favorite.objects.filter(
+            user=request.user,
+            content_type=ct,
+            object_id=obj_id,
+        ).exists()
 
 
 class ArticleQueryIn(serializers.Serializer):
@@ -91,3 +113,69 @@ class UserMeSerializer(serializers.ModelSerializer):
 
     def get_themes(self, obj):
         return list(obj.interest_centers.values_list("theme", flat=True))
+
+
+class BestPracticeSerializer(serializers.ModelSerializer):
+    image = serializers.SerializerMethodField()
+    is_favorite = serializers.SerializerMethodField()
+
+    class Meta:
+        model = BestPractice
+        fields = ["id", "title", "content", "image", "created_at", "is_favorite"]
+
+    def get_image(self, obj):
+        if not obj.image:
+            return None
+        request = self.context.get("request")
+        url = obj.image.url
+        return request.build_absolute_uri(url) if request else url
+
+    def get_is_favorite(self, obj):
+        request = self.context.get("request")
+        if not request or request.user.is_anonymous:
+            return False
+        ct = ContentType.objects.get_for_model(BestPractice)
+        return Favorite.objects.filter(
+            user=request.user, content_type=ct, object_id=obj.id
+        ).exists()
+
+
+class FavoriteEnrichedSerializer(serializers.ModelSerializer):
+    model = serializers.SerializerMethodField()
+    title = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Favorite
+        fields = [
+            "id",
+            "model",
+            "object_id",
+            "title",
+            "image",
+            "created_at",
+        ]
+
+    def get_model(self, obj):
+        return obj.content_type.model
+
+    def get_title(self, obj):
+        target = obj.content_object
+        if not target:
+            return None
+        return getattr(target, "title", str(target))
+
+    def get_image(self, obj):
+        target = obj.content_object
+        if not target:
+            return None
+        image_url = getattr(target, "image_url", None)
+        if image_url:
+            return image_url
+        image_field = getattr(target, "image", None)
+        if image_field:
+            try:
+                return image_field.url
+            except ValueError:
+                return None
+        return None
