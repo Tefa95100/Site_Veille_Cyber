@@ -100,7 +100,7 @@ export default function Register() {
           </label>
 
           <fieldset style={{ marginTop: "0.5rem" }}>
-            <legend style={{ fontSize: "0.78rem", marginBottom: "0.4rem" }}>
+            <legend style={{ fontSize: "0.90vw", marginBottom: "0.4rem" }}>
               Thèmes qui t’intéressent
             </legend>
             <div
@@ -111,7 +111,7 @@ export default function Register() {
               }}
             >
               {AVAILABLE_THEMES.map((t) => (
-                <label key={t.value} style={{ fontSize: "0.75rem" }}>
+                <label key={t.value} style={{ fontSize: "1vw" }}>
                   <input
                     type="checkbox"
                     checked={themes.includes(t.value)}

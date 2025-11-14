@@ -116,7 +116,7 @@ export default function Profile() {
           </label>
 
           <fieldset style={{ marginTop: "0.75rem" }}>
-            <legend style={{ fontSize: "0.8rem", marginBottom: "0.4rem" }}>
+            <legend style={{ fontSize: "0.8vw", marginBottom: "0.4rem" }}>
               Mes thèmes
             </legend>
             <div
@@ -127,7 +127,7 @@ export default function Profile() {
               }}
             >
               {AVAILABLE_THEMES.map((t) => (
-                <label key={t.value} style={{ fontSize: "0.78rem" }}>
+                <label key={t.value} style={{ fontSize: "0.78vw" }}>
                   <input
                     type="checkbox"
                     checked={themes.includes(t.value)}
@@ -153,7 +153,7 @@ export default function Profile() {
       </div>
 
       <div className="profile-card">
-        <h2 className="profile-title" style={{ fontSize: "1rem" }}>
+        <h2 className="profile-title" style={{ fontSize: "1vw" }}>
           Sécurité
         </h2>
         {!pwdOpen ? (
